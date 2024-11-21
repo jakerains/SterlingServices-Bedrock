@@ -1,0 +1,46 @@
+{
+  "name": "sterling-sow-generator",
+  "private": true,
+  "version": "3.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@aws-sdk/client-bedrock-runtime": "^3.511.0",
+    "@aws-sdk/client-s3": "^3.511.0",
+    "@aws-sdk/client-transcribe": "^3.511.0",
+    "@headlessui/react": "^1.7.18",
+    "@heroicons/react": "^2.1.1",
+    "@tailwindcss/forms": "^0.5.7",
+    "autoprefixer": "^10.4.17",
+    "aws-sdk": "^2.1550.0",
+    "clsx": "^2.1.0",
+    "file-saver": "^2.0.5",
+    "jspdf": "^2.5.1",
+    "postcss": "^8.4.35",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-dropzone": "^14.2.3",
+    "react-hot-toast": "^2.4.1",
+    "tailwindcss": "^3.4.1",
+    "zustand": "^4.5.0"
+  },
+  "devDependencies": {
+    "@types/file-saver": "^2.0.7",
+    "@types/node": "^20.11.19",
+    "@types/react": "^18.2.43",
+    "@types/react-dom": "^18.2.17",
+    "@typescript-eslint/eslint-plugin": "^6.14.0",
+    "@typescript-eslint/parser": "^6.14.0",
+    "@vitejs/plugin-react": "^4.2.1",
+    "eslint": "^8.55.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.5",
+    "typescript": "^5.2.2",
+    "vite": "^5.0.8"
+  }
+}
