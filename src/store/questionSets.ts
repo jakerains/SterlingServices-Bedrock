@@ -33,64 +33,41 @@ interface QuestionSetsState {
 
 // Default SOW question set
 const defaultSowSet: QuestionSet = {
-  id: 'sow-default',
-  name: 'SOW Set',
-  description: 'Default Statement of Work question set',
+  id: 'default',
+  name: 'Default Analysis Set',
+  description: 'Default question set for content analysis',
   questions: sowQuestions,
 };
 
 export const useQuestionSets = create<QuestionSetsState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       sets: [defaultSowSet],
       activeSetId: defaultSowSet.id,
       
-      addSet: (newSet) => {
-        const id = `set-${Date.now()}`;
-        set((state) => ({
-          sets: [...state.sets, { ...newSet, id }],
-        }));
-        return id;
-      },
-
-      updateSet: (id, updatedSet) => {
-        set((state) => ({
-          sets: state.sets.map((set) =>
-            set.id === id ? { ...set, ...updatedSet } : set
-          ),
-        }));
-      },
-
-      deleteSet: (id) => {
-        const { sets, activeSetId } = get();
-        if (sets.length === 1) {
-          throw new Error("Cannot delete the last question set");
-        }
-        
-        set((state) => ({
-          sets: state.sets.filter((set) => set.id !== id),
-          activeSetId: activeSetId === id ? state.sets[0].id : activeSetId,
-        }));
-      },
-
-      setActiveSet: (id) => {
-        set({ activeSetId: id });
-      },
-
-      importSet: async (file: File) => {
+      addSet: (newSet) => set((state) => ({
+        sets: [...state.sets, { ...newSet, id: `set-${Date.now()}` }],
+      })),
+      
+      updateSet: (id, updatedSet) => set((state) => ({
+        sets: state.sets.map((set) =>
+          set.id === id ? { ...set, ...updatedSet } : set
+        ),
+      })),
+      
+      deleteSet: (id) => set((state) => ({
+        sets: state.sets.filter((set) => set.id !== id),
+      })),
+      
+      setActiveSet: (id) => set({ activeSetId: id }),
+      
+      importSet: async (file) => {
         try {
-          const content = await file.text();
-          const questions = JSON.parse(content);
-          const name = file.name.replace('.json', '');
-          
-          const newSet = {
-            name,
-            description: `Imported from ${file.name}`,
-            questions,
-          };
-          
-          const id = get().addSet(newSet);
-          get().setActiveSet(id);
+          const text = await file.text();
+          const importedSet = JSON.parse(text);
+          set((state) => ({
+            sets: [...state.sets, { ...importedSet, id: `set-${Date.now()}` }],
+          }));
         } catch (error) {
           throw new Error('Failed to import question set');
         }

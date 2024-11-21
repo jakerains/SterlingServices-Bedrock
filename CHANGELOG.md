@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.1.0] - 2024-11-21
+
+### Changed
+- Updated application branding from "SOW Generator" to "Services: ToolKit"
+- Added Sterling logo to navbar
+- Added version number display to footer
+- Improved UI layout and spacing
+
+### Added
+- Version number display in application footer
+- Sterling logo integration
+- Public images directory for static assets
+
 ## [3.0.0] - 2024-11-20
 
 ### Added (app.py)
