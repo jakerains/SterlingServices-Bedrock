@@ -1,91 +1,59 @@
-# Sterling Services: S.O.W. Generator
+# Sterling Services: Analysis ToolKit
 
 ## Overview
 
-The Sterling Services: S.O.W. Generator is a Streamlit-based application designed to automate and streamline the process of creating Statements of Work (SOW). It uses AWS Bedrock with Claude 3.5 Haiku to analyze project information from audio or text inputs and generate comprehensive answers to predefined project questions.
+The Sterling Services: Analysis ToolKit is a React-based application designed to automate and streamline the process of analyzing client meetings and conversations. It uses AWS Bedrock with Claude 3.5 Haiku to analyze transcripts and generate comprehensive answers to predefined analysis questions.
 
 ## Features
 
-- Optimized audio transcription using AWS Transcribe with parallel processing
-- Automatic analysis after transcription
-- Support for multiple file formats (audio and text)
+- Audio transcription using AWS Transcribe
+- Automatic company name detection
 - AI-powered analysis using AWS Bedrock and Claude 3.5 Haiku
-- Customizable project questions with instructions
+- Persistent question set management with IndexedDB
 - Real-time progress tracking
-- Multiple output formats (TXT, PDF, DOCX)
+- Multiple output formats (PDF, TXT, DOCX)
+- Responsive React-based UI with Tailwind CSS
 
 ## Requirements
 
-- Python 3.10+
+- Node.js 18+
 - AWS Account with access to:
   - AWS Bedrock (Claude 3.5 Haiku model)
   - AWS Transcribe
   - S3 Bucket
-- FFmpeg (for audio processing)
-- Required Python packages (listed in `requirements.txt`)
+- Environment variables configured
 
 ## Installation
 
 1. Clone the repository:
-   ```
-   git clone https://github.com/your-username/sterling-services-sow-generator.git
-   cd sterling-services-sow-generator
-   ```
-
-2. Install FFmpeg:
-   ```
-   # On Mac
-   brew install ffmpeg
-   
-   # On Ubuntu
-   sudo apt-get install ffmpeg
+   ```bash
+   git clone https://github.com/your-username/sterling-services-toolkit.git
+   cd sterling-services-toolkit
    ```
 
-3. Install the required dependencies:
-   ```
-   pip install -r requirements.txt
-   ```
-
-4. Configure AWS credentials in `.env` file or environment variables:
-   ```
-   AWS_ACCESS_KEY_ID=your_access_key
-   AWS_SECRET_ACCESS_KEY=your_secret_key
-   AWS_REGION=your_region
-   AWS_BUCKET_NAME=your_bucket
+2. Install dependencies:
+   ```bash
+   npm install
    ```
 
-## Usage
-
-1. Run the Streamlit app:
+3. Configure environment variables in `.env`:
    ```
-   streamlit run app.py
+   VITE_AWS_ACCESS_KEY_ID=your_access_key
+   VITE_AWS_SECRET_ACCESS_KEY=your_secret_key
+   VITE_AWS_REGION=your_region
+   VITE_AWS_BUCKET_NAME=your_bucket
    ```
 
-2. Upload an audio or text file containing project information.
+## Development
 
-3. The app will automatically:
-   - Transcribe audio files (if applicable)
-   - Process the content using AWS Bedrock
-   - Generate comprehensive answers to project questions
-   - Display results with download options
-
-## Customizing Questions
-
-Edit questions through the UI or directly in `Questions.json`. Each question can include:
-- Category
-- Question text
-- Optional instructions for AI processing
-
-## Performance Optimization
-
-The app uses parallel processing for:
-- Audio transcription (chunked processing)
-- Question analysis (batch processing)
-- Result generation
+Run the development server:
+```bash
+npm run dev
+```
 
 ## Contributing
 
-Contributions to improve the Sterling Services: S.O.W. Generator are welcome. Please feel free to submit pull requests or open issues to suggest improvements or report bugs.
+Contributions to improve the Sterling Services: Analysis ToolKit are welcome. Please feel free to submit pull requests or open issues to suggest improvements or report bugs.
 
 ## License
 
