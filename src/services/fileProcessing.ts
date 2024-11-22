@@ -88,12 +88,9 @@ export async function processFile(file: File, questions: any) {
     // Generate final document
     setCurrentStep('generate');
     setStatusMessage('Generating final document...');
-    setProgress(0);
-    
-    await sleep(1000);
     setProgress(100);
     setStatusMessage('Document generation complete');
-    
+    await sleep(1000);
     return results;
   } catch (error) {
     console.error('Error processing file:', error);

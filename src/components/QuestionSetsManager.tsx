@@ -1,25 +1,75 @@
 import { Fragment, useState } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
-import { XMarkIcon, PlusIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, PencilIcon, PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { useQuestionSets } from '../store/questionSets';
 import toast from 'react-hot-toast';
 
 interface QuestionSetsManagerProps {
   open: boolean;
   setOpen: (open: boolean) => void;
+  onEditClick: () => void;
 }
 
-export default function QuestionSetsManager({ open, setOpen }: QuestionSetsManagerProps) {
-  const { sets, activeSetId, setActiveSet } = useQuestionSets();
+export default function QuestionSetsManager({ open, setOpen, onEditClick }: QuestionSetsManagerProps) {
+  const { sets, activeSetId, setActiveSet, addSet, updateSet, deleteSet } = useQuestionSets();
   const [isCreating, setIsCreating] = useState(false);
   const [newSetName, setNewSetName] = useState('');
   const [newSetDescription, setNewSetDescription] = useState('');
-  const [isEditing, setIsEditing] = useState(false);
 
   const handleSetClick = (setId: string) => {
-    setActiveSet(setId);
-    setIsEditing(true);
-    setOpen(false); // Close the sidebar after selection
+    const selectedSet = sets.find(set => set.id === setId);
+    if (selectedSet) {
+      setActiveSet(setId);
+      toast.success(`Selected question set: ${selectedSet.name}`);
+      setOpen(false);
+    }
+  };
+
+  const handleCreateSet = async () => {
+    if (!newSetName.trim()) {
+      toast.error('Please enter a name for the set');
+      return;
+    }
+
+    try {
+      await addSet({
+        name: newSetName,
+        description: newSetDescription,
+        questions: {
+          project_questions: [
+            {
+              category: 'New Category',
+              questions: ['New Question']
+            }
+          ]
+        }
+      });
+
+      setNewSetName('');
+      setNewSetDescription('');
+      setIsCreating(false);
+      toast.success('Question set created');
+    } catch (error) {
+      toast.error('Failed to create question set');
+      console.error('Create error:', error);
+    }
+  };
+
+  const handleDeleteSet = (setId: string, setName: string, e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent set selection when clicking delete
+    
+    if (setId === 'default') {
+      toast.error("Cannot delete the default set");
+      return;
+    }
+    
+    if (window.confirm(`Are you sure you want to delete "${setName}"?`)) {
+      deleteSet(setId);
+      if (activeSetId === setId) {
+        setActiveSet('default');
+      }
+      toast.success(`Deleted question set: ${setName}`);
+    }
   };
 
   return (
@@ -56,25 +106,93 @@ export default function QuestionSetsManager({ open, setOpen }: QuestionSetsManag
                       </button>
                     </div>
                   </div>
-                  <div className="relative mt-6 flex-1 px-4 sm:px-6">
-                    <div className="space-y-4">
+                  
+                  <div className="px-4 sm:px-6">
+                    <button
+                      onClick={() => setIsCreating(true)}
+                      className="w-full mt-4 flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-500"
+                    >
+                      <PlusIcon className="h-5 w-5" />
+                      Create New Set
+                    </button>
+
+                    {isCreating && (
+                      <div className="mt-4 space-y-4 p-4 bg-gray-50 rounded-lg">
+                        <input
+                          type="text"
+                          placeholder="Set Name"
+                          value={newSetName}
+                          onChange={(e) => setNewSetName(e.target.value)}
+                          className="w-full px-3 py-2 border rounded-md"
+                        />
+                        <textarea
+                          placeholder="Description"
+                          value={newSetDescription}
+                          onChange={(e) => setNewSetDescription(e.target.value)}
+                          className="w-full px-3 py-2 border rounded-md"
+                        />
+                        <div className="flex gap-2">
+                          <button
+                            onClick={handleCreateSet}
+                            className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-500"
+                          >
+                            Create
+                          </button>
+                          <button
+                            onClick={() => setIsCreating(false)}
+                            className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="mt-6 space-y-4 px-4 sm:px-6">
                       {sets.map((set) => (
-                        <button
+                        <div
                           key={set.id}
-                          onClick={() => handleSetClick(set.id)}
-                          className={`w-full text-left p-4 rounded-lg border ${
+                          className={`relative p-4 rounded-lg border cursor-pointer ${
                             set.id === activeSetId
                               ? 'border-indigo-600 bg-indigo-50'
-                              : 'border-gray-200 hover:border-indigo-300 hover:bg-gray-50'
+                              : 'border-gray-200 hover:border-indigo-300'
                           }`}
+                          onClick={() => handleSetClick(set.id)}
                         >
-                          <h3 className="font-medium text-gray-900">{set.name}</h3>
-                          {set.description && (
-                            <p className="mt-1 text-sm text-gray-500">
-                              {set.description}
-                            </p>
-                          )}
-                        </button>
+                          <div className="pr-20">
+                            <h3 className="font-medium text-gray-900">{set.name}</h3>
+                            {set.description && (
+                              <p className="mt-1 text-sm text-gray-500">
+                                {set.description}
+                              </p>
+                            )}
+                          </div>
+                          
+                          <div className="absolute top-4 right-4 flex items-center gap-2">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setActiveSet(set.id);
+                                onEditClick();
+                                setOpen(false);
+                              }}
+                              className="p-1.5 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100"
+                              title="Edit Set"
+                            >
+                              <PencilIcon className="h-5 w-5" />
+                            </button>
+                            
+                            {set.id !== 'default' && (
+                              <button
+                                onClick={(e) => handleDeleteSet(set.id, set.name, e)}
+                                className="p-1.5 text-red-400 hover:text-red-600 rounded-full hover:bg-red-50"
+                                title="Delete Set"
+                              >
+                                <TrashIcon className="h-5 w-5" />
+                              </button>
+                            )}
+                          </div>
+                        </div>
                       ))}
                     </div>
                   </div>

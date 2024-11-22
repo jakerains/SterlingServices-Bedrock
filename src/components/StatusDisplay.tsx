@@ -1,147 +1,126 @@
 import { useFileStore } from '../store/file';
-import { CheckCircleIcon, ClockIcon } from '@heroicons/react/24/outline';
-import { CheckCircleIcon as CheckCircleSolidIcon } from '@heroicons/react/24/solid';
-
-const steps = [
-  { id: 'upload', name: 'File Upload' },
-  { id: 'transcribe', name: 'Audio Transcription' },
-  { id: 'analyze', name: 'Content Analysis' },
-  { id: 'generate', name: 'SOW Generation' },
-];
 
 export default function StatusDisplay() {
-  const { file, processing, currentStep = 'upload', statusMessage, progress } = useFileStore();
+  const { file, currentStep, progress, statusMessage } = useFileStore();
+
+  const steps = [
+    { id: 'upload', title: 'File Upload', icon: '📁' },
+    { id: 'transcribe', title: 'Audio Transcription', icon: '🎙️' },
+    { id: 'analyze', title: 'Content Analysis', icon: '🔍' },
+    { id: 'generate', title: 'Analysis Generation', icon: '📄' }
+  ];
 
   const getStepStatus = (stepId: string) => {
-    const stepOrder = steps.findIndex(s => s.id === stepId);
-    const currentStepOrder = steps.findIndex(s => s.id === currentStep);
-
-    if (stepOrder < currentStepOrder) return 'complete';
-    if (stepOrder === currentStepOrder) return processing ? 'current' : 'upcoming';
-    return 'upcoming';
-  };
-
-  const getAnalysisDetails = () => {
-    if (currentStep !== 'analyze' || !statusMessage) return null;
+    const stepOrder = ['upload', 'transcribe', 'analyze', 'generate'];
+    const stepIndex = stepOrder.indexOf(stepId);
+    const currentIndex = stepOrder.indexOf(currentStep);
     
-    return (
-      <div className="mt-3 space-y-2">
-        <div className="flex items-center">
-          <ClockIcon className="h-4 w-4 text-indigo-600 mr-2" />
-          <span className="text-xs text-gray-600">
-            This may take several minutes depending on content length
-          </span>
-        </div>
-        <div className="text-xs text-gray-500">
-          {statusMessage.includes('category:') && (
-            <span className="font-medium text-indigo-600">
-              {statusMessage}
-            </span>
-          )}
-        </div>
-      </div>
-    );
+    if (stepIndex < currentIndex) return 'completed';
+    if (stepIndex === currentIndex) return 'in-progress';
+    return 'pending';
   };
-
-  if (!file) return null;
 
   return (
-    <div className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-900/5">
-      <div className="flex items-center justify-between">
-        <h2 className="text-base font-semibold leading-7 text-gray-900">
-          Processing Status
-        </h2>
-        <p className="text-sm text-gray-500">{file.name}</p>
-      </div>
-
-      {processing && statusMessage && (
-        <div className="mt-2">
-          <p className="text-sm text-gray-600">{statusMessage}</p>
-          {progress > 0 && (
-            <div className="mt-2">
-              <div className="h-2 w-full rounded-full bg-gray-200">
-                <div
-                  className="h-2 rounded-full bg-indigo-600 transition-all duration-300"
-                  style={{ width: `${progress}%` }}
-                />
-              </div>
-              <p className="mt-1 text-xs text-gray-500 text-right">{progress}%</p>
-            </div>
-          )}
-          {processing && currentStep === 'analyze' && getAnalysisDetails()}
+    <div className="max-w-3xl mx-auto">
+      <div className="bg-white rounded-xl shadow-sm ring-1 ring-gray-900/5 p-6">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl font-semibold text-gray-900">Processing Status</h2>
+          <div className="text-sm text-gray-500">{file?.name}</div>
         </div>
-      )}
 
-      <div className="mt-6">
-        <div className="overflow-hidden rounded-lg">
-          <ul role="list" className="-mb-8">
-            {steps.map((step, stepIdx) => {
-              const status = getStepStatus(step.id);
-              return (
-                <li key={step.id}>
-                  <div className="relative pb-8">
-                    {stepIdx !== steps.length - 1 ? (
-                      <span
-                        className="absolute left-4 top-4 -ml-px h-full w-0.5 bg-gray-200"
-                        aria-hidden="true"
-                      />
-                    ) : null}
-                    <div className="relative flex space-x-3">
-                      <div>
-                        <span
-                          className={`flex h-8 w-8 items-center justify-center rounded-full ring-1 ring-inset ${
-                            status === 'complete'
-                              ? 'bg-indigo-50 ring-indigo-600'
-                              : status === 'current'
-                              ? 'bg-white ring-indigo-600'
-                              : 'bg-white ring-gray-300'
-                          }`}
-                        >
-                          {status === 'complete' ? (
-                            <CheckCircleSolidIcon
-                              className="h-5 w-5 text-indigo-600"
-                              aria-hidden="true"
-                            />
-                          ) : status === 'current' ? (
-                            <ClockIcon
-                              className="h-5 w-5 text-indigo-600"
-                              aria-hidden="true"
-                            />
-                          ) : (
-                            <CheckCircleIcon
-                              className="h-5 w-5 text-gray-400"
-                              aria-hidden="true"
-                            />
-                          )}
-                        </span>
-                      </div>
-                      <div className="flex min-w-0 flex-1 justify-between space-x-4 pt-1.5">
-                        <div>
-                          <p
-                            className={`text-sm font-medium ${
-                              status === 'complete'
-                                ? 'text-indigo-600'
-                                : status === 'current'
-                                ? 'text-gray-900'
-                                : 'text-gray-500'
-                            }`}
-                          >
-                            {step.name}
-                          </p>
-                        </div>
-                        <div className="whitespace-nowrap text-right text-sm text-gray-500">
-                          {status === 'complete' && 'Completed'}
-                          {status === 'current' && processing && 'In Progress'}
-                          {status === 'current' && !processing && 'Ready'}
-                          {status === 'upcoming' && 'Pending'}
-                        </div>
-                      </div>
-                    </div>
+        {/* Current Status Message */}
+        <div className="mb-4 bg-gray-50 rounded-lg p-3 border border-gray-100">
+          <p className="text-sm text-gray-600 font-medium">
+            {statusMessage || 'Initializing...'}
+          </p>
+        </div>
+
+        {/* Progress Bar */}
+        <div className="mb-8">
+          <div className="relative h-3 bg-gray-100 rounded-full overflow-hidden">
+            <div 
+              className="absolute h-full rounded-full transition-all duration-500 ease-in-out"
+              style={{
+                width: `${progress}%`,
+                background: `linear-gradient(
+                  45deg,
+                  rgba(99, 102, 241, 1) 0%,
+                  rgba(168, 85, 247, 1) 35%,
+                  rgba(236, 72, 153, 1) 70%,
+                  rgba(99, 102, 241, 1) 100%
+                )`,
+                backgroundSize: '200% 200%',
+                animation: 'gradient 2s ease infinite'
+              }}
+            />
+          </div>
+          <div className="mt-2 text-right text-sm text-gray-500">{progress}%</div>
+        </div>
+
+        {/* Steps */}
+        <div className="space-y-4">
+          {steps.map((step, index) => {
+            const status = getStepStatus(step.id);
+            
+            return (
+              <div key={step.id} className="relative">
+                {/* Connector Line */}
+                {index < steps.length - 1 && (
+                  <div 
+                    className={`absolute left-6 top-10 w-0.5 h-full -ml-px
+                      ${status === 'completed' ? 'bg-gradient-to-b from-indigo-500 via-purple-500 to-pink-500' : 'bg-gray-200'}`}
+                  />
+                )}
+                
+                {/* Step Item */}
+                <div className="relative flex items-center">
+                  {/* Status Icon */}
+                  <div 
+                    className={`flex h-12 w-12 items-center justify-center rounded-full shadow-lg
+                      ${status === 'completed' ? 'bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500' : 
+                        status === 'in-progress' ? 'bg-indigo-500' : 
+                        'bg-gray-100'}`}
+                    style={status === 'in-progress' ? {
+                      animation: 'pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+                    } : undefined}
+                  >
+                    <span className={`text-lg ${status === 'completed' || status === 'in-progress' ? 'text-white' : 'text-gray-400'}`}>
+                      {step.icon}
+                    </span>
                   </div>
-                </li>
-              );
-            })}
-          </ul>
+
+                  {/* Step Content */}
+                  <div className="ml-4 flex-1">
+                    <h3 className="text-lg font-medium text-gray-900">
+                      {step.title}
+                    </h3>
+                    <p className="text-sm text-gray-500">
+                      {status === 'completed' ? 'Completed' :
+                       status === 'in-progress' ? 'In Progress' :
+                       'Pending'}
+                    </p>
+                  </div>
+
+                  {/* Status Badge */}
+                  <div 
+                    className={`ml-4 flex-shrink-0 rounded-full px-4 py-1.5 text-sm font-medium
+                      ${status === 'completed' ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white' :
+                        status === 'in-progress' ? 'bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white' :
+                        'bg-gray-50 text-gray-500'}`}
+                    style={status === 'in-progress' ? {
+                      backgroundSize: '200% 200%',
+                      animation: 'gradient-flow 2s ease infinite'
+                    } : undefined}
+                  >
+                    {status === 'completed' ? 'Complete' :
+                     status === 'in-progress' ? 'Processing' :
+                     'Pending'}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>

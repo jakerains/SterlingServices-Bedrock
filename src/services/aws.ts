@@ -162,7 +162,45 @@ export const analyzeWithBedrock = async (text: string, questions: any, setStatus
 
   const MODEL_ID = 'us.anthropic.claude-3-5-haiku-20241022-v1:0';
   const results = [];
-  const CONCURRENT_LIMIT = 3;
+
+  // First, get the company name
+  setStatusMessage('Identifying company from transcript...');
+  
+  const companyCommand = new InvokeModelCommand({
+    modelId: MODEL_ID,
+    contentType: "application/json",
+    accept: "application/json",
+    body: JSON.stringify({
+      anthropic_version: "bedrock-2023-05-31",
+      messages: [
+        {
+          role: "user",
+          content: `From the following transcript, identify ONLY the name of the company being discussed (not Sterling or any vendor names). Return ONLY the company name, nothing else: \n\n${text}`
+        }
+      ],
+      max_tokens: 100,
+      temperature: 0.1
+    })
+  });
+
+  let companyName;
+  try {
+    const companyResponse = await awsClients.bedrock.send(companyCommand);
+    const companyResponseBody = JSON.parse(new TextDecoder().decode(companyResponse.body));
+    companyName = companyResponseBody.content[0].text.trim();
+  } catch (error) {
+    console.error('Error getting company name:', error);
+    companyName = 'Client';
+  }
+
+  // Add company name as first result
+  results.push({
+    category: "Company Information",
+    answers: [{
+      question: "Client Company Name",
+      answer: companyName
+    }]
+  });
 
   // Add total questions count for progress calculation
   const totalCategories = questions.project_questions.length;

@@ -1,10 +1,14 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import App from './App.tsx';
+import AppWrapper from './App';
 import './index.css';
+import { initializeDefaultSet } from './db';
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-);
+// Initialize IndexedDB and add default set before rendering
+initializeDefaultSet().then(() => {
+  ReactDOM.createRoot(document.getElementById('root')!).render(
+    <React.StrictMode>
+      <AppWrapper />
+    </React.StrictMode>
+  );
+});

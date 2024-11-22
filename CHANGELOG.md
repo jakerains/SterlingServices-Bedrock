@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.2.0] - 2024-03-22
+
+### Added
+- Implemented IndexedDB for persistent question set storage
+- Added support for sharing question sets across browser sessions
+- Enhanced data persistence for question management
+
+### Changed
+- Migrated from localStorage to IndexedDB for better storage capabilities
+- Improved question set management reliability
+- Updated footer positioning for better UI consistency
+
 ## [3.1.0] - 2024-11-21
 
 ### Changed
