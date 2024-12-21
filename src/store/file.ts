@@ -13,19 +13,24 @@ interface FileState {
   setStatusMessage: (message: string) => void;
   setProgress: (progress: number) => void;
   setCompleted: (completed: boolean) => void;
+  reset: () => void;
 }
 
 const debug = (action: string, state: any) => {
   console.log('[FileStore]', action, state);
 };
 
-export const useFileStore = create<FileState>((set) => ({
+const initialState = {
   file: null,
   processing: false,
   completed: false,
-  currentStep: 'upload',
+  currentStep: 'upload' as const,
   statusMessage: '',
   progress: 0,
+};
+
+export const useFileStore = create<FileState>((set) => ({
+  ...initialState,
   setFile: (file) => {
     debug('setFile', { fileName: file?.name });
     set({ file, statusMessage: '', progress: 0, completed: false });
@@ -49,5 +54,9 @@ export const useFileStore = create<FileState>((set) => ({
   setCompleted: (completed) => {
     debug('setCompleted', { completed });
     set({ completed });
+  },
+  reset: () => {
+    debug('reset', {});
+    set(initialState);
   },
 }));

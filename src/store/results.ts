@@ -12,7 +12,7 @@ interface CategoryResult {
 
 interface ResultsState {
   results: CategoryResult[] | null;
-  setResults: (results: CategoryResult[]) => void;
+  setResults: (results: CategoryResult[] | null) => void;
 }
 
 export const useResults = create<ResultsState>((set) => ({

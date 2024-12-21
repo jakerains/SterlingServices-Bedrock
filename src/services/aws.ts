@@ -1,14 +1,4 @@
 import {
-  S3Client,
-  PutObjectCommand,
-  DeleteObjectCommand,
-} from '@aws-sdk/client-s3';
-import {
-  TranscribeClient,
-  StartTranscriptionJobCommand,
-  GetTranscriptionJobCommand,
-} from '@aws-sdk/client-transcribe';
-import {
   BedrockRuntimeClient,
   InvokeModelCommand,
 } from '@aws-sdk/client-bedrock-runtime';
@@ -24,8 +14,7 @@ const validateEnvVariables = () => {
   const required = [
     'VITE_AWS_ACCESS_KEY_ID',
     'VITE_AWS_SECRET_ACCESS_KEY',
-    'VITE_AWS_REGION',
-    'VITE_AWS_BUCKET_NAME'
+    'VITE_AWS_REGION'
   ];
 
   const missing = required.filter(key => !import.meta.env[key]);
@@ -37,7 +26,6 @@ const validateEnvVariables = () => {
   
   debug('Config', 'Environment variables validated', {
     region: import.meta.env.VITE_AWS_REGION,
-    bucket: import.meta.env.VITE_AWS_BUCKET_NAME,
     hasAccessKey: !!import.meta.env.VITE_AWS_ACCESS_KEY_ID,
     hasSecretKey: !!import.meta.env.VITE_AWS_SECRET_ACCESS_KEY
   });
@@ -45,8 +33,8 @@ const validateEnvVariables = () => {
   return true;
 };
 
-// Initialize AWS clients with error handling
-const initializeAWSClients = () => {
+// Initialize AWS client with error handling
+const initializeAWSClient = () => {
   if (!validateEnvVariables()) {
     throw new Error('Missing required AWS configuration');
   }
@@ -60,108 +48,38 @@ const initializeAWSClients = () => {
   };
 
   try {
-    debug('Init', 'Initializing AWS clients', { region: config.region });
-    return {
-      s3: new S3Client(config),
-      transcribe: new TranscribeClient(config),
-      bedrock: new BedrockRuntimeClient(config),
-    };
+    debug('Init', 'Initializing AWS Bedrock client', { region: config.region });
+    return new BedrockRuntimeClient(config);
   } catch (error) {
-    debug('Init', 'Error initializing AWS clients', { error });
-    throw new Error('Failed to initialize AWS services');
+    debug('Init', 'Error initializing AWS Bedrock client', { error });
+    throw new Error('Failed to initialize AWS Bedrock service');
   }
 };
 
-let awsClients: ReturnType<typeof initializeAWSClients>;
+let bedrockClient: BedrockRuntimeClient;
 
 try {
-  awsClients = initializeAWSClients();
+  bedrockClient = initializeAWSClient();
 } catch (error) {
   console.error('AWS initialization error:', error);
-  toast.error('Failed to initialize AWS services. Please check your configuration.');
+  toast.error('Failed to initialize AWS Bedrock service. Please check your configuration.');
 }
 
-export const uploadToS3 = async (file: File, fileName: string) => {
-  if (!awsClients) throw new Error('AWS services not initialized');
+interface Answer {
+  question: string;
+  answer: string;
+}
 
-  try {
-    const command = new PutObjectCommand({
-      Bucket: import.meta.env.VITE_AWS_BUCKET_NAME,
-      Key: fileName,
-      Body: file,
-      ContentType: file.type,
-      ACL: 'public-read'
-    });
+interface CategoryResult {
+  category: string;
+  answers: Answer[];
+}
 
-    const response = await awsClients.s3.send(command);
-    return response;
-  } catch (error: any) {
-    console.error('S3 Upload Error:', error);
-    throw new Error(`Failed to upload file to S3: ${error.message}`);
-  }
-};
-
-export const deleteFromS3 = async (fileName: string) => {
-  if (!awsClients) throw new Error('AWS services not initialized');
-
-  try {
-    const command = new DeleteObjectCommand({
-      Bucket: import.meta.env.VITE_AWS_BUCKET_NAME,
-      Key: fileName,
-    });
-
-    await awsClients.s3.send(command);
-    return true;
-  } catch (error) {
-    console.warn('Failed to delete S3 file:', fileName, error);
-    // Don't throw the error - just return false to indicate failure
-    return false;
-  }
-};
-
-export const startTranscription = async (fileName: string, jobName: string) => {
-  if (!awsClients) throw new Error('AWS services not initialized');
-
-  try {
-    const params = {
-      TranscriptionJobName: jobName,
-      LanguageCode: "en-US",
-      MediaFormat: "mp3",
-      Media: {
-        MediaFileUri: `s3://${import.meta.env.VITE_AWS_BUCKET_NAME}/${fileName}`
-      },
-      OutputBucketName: import.meta.env.VITE_AWS_BUCKET_NAME
-    };
-
-    const command = new StartTranscriptionJobCommand(params);
-    const response = await awsClients.transcribe.send(command);
-    return response;
-  } catch (error: any) {
-    console.error('Transcription Error:', error);
-    throw new Error('Failed to start transcription');
-  }
-};
-
-export const getTranscriptionStatus = async (jobName: string) => {
-  if (!awsClients) throw new Error('AWS services not initialized');
-
-  try {
-    const command = new GetTranscriptionJobCommand({
-      TranscriptionJobName: jobName,
-    });
-
-    return awsClients.transcribe.send(command);
-  } catch (error) {
-    console.error('Transcription status error:', error);
-    throw new Error('Failed to get transcription status');
-  }
-};
-
-export const analyzeWithBedrock = async (text: string, questions: any, setStatusMessage: (msg: string) => void, setProgress: (progress: number) => void) => {
-  if (!awsClients) throw new Error('AWS services not initialized');
+export const analyzeWithBedrock = async (text: string, questions: any, setStatusMessage: (msg: string) => void, setProgress: (progress: number) => void): Promise<CategoryResult[]> => {
+  if (!bedrockClient) throw new Error('AWS Bedrock service not initialized');
 
   const MODEL_ID = 'us.anthropic.claude-3-5-haiku-20241022-v1:0';
-  const results = [];
+  const results: CategoryResult[] = [];
 
   // First, get the company name
   setStatusMessage('Identifying company from transcript...');
@@ -185,7 +103,7 @@ export const analyzeWithBedrock = async (text: string, questions: any, setStatus
 
   let companyName;
   try {
-    const companyResponse = await awsClients.bedrock.send(companyCommand);
+    const companyResponse = await bedrockClient.send(companyCommand);
     const companyResponseBody = JSON.parse(new TextDecoder().decode(companyResponse.body));
     companyName = companyResponseBody.content[0].text.trim();
   } catch (error) {
@@ -210,7 +128,7 @@ export const analyzeWithBedrock = async (text: string, questions: any, setStatus
     try {
       setStatusMessage(`Processing category: ${category.category}`);
       
-      const categoryResults = {
+      const categoryResults: CategoryResult = {
         category: category.category,
         answers: [],
       };
@@ -237,7 +155,7 @@ export const analyzeWithBedrock = async (text: string, questions: any, setStatus
             })
           });
 
-          const response = await awsClients.bedrock.send(command);
+          const response = await bedrockClient.send(command);
           const responseBody = JSON.parse(new TextDecoder().decode(response.body));
           
           categoryResults.answers.push({
