@@ -15,7 +15,7 @@ export default function ResultsDisplay() {
       if (selectedFormat === 'pdf') {
         const pdfBuffer = await generatePDF(results);
         const companyName = results[0]?.answers[0]?.answer || 'Client';
-        const blob = new Blob([pdfBuffer], { type: 'application/pdf' });
+        const blob = new Blob([pdfBuffer as BlobPart], { type: 'application/pdf' });
         saveAs(blob, `${companyName} Analysis.pdf`);
       } else {
         switch (selectedFormat) {
@@ -66,6 +66,7 @@ export default function ResultsDisplay() {
             value={selectedFormat}
             onChange={(e) => setSelectedFormat(e.target.value as any)}
             className="rounded-lg border-gray-300 py-2 pl-3 pr-10 text-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 shadow-sm"
+            aria-label="Download format"
           >
             <option value="pdf">PDF</option>
             <option value="txt">TXT</option>

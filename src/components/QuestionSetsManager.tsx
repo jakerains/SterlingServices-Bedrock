@@ -101,6 +101,7 @@ export default function QuestionSetsManager({ open, setOpen, onEditClick }: Ques
                         type="button"
                         className="rounded-md text-gray-400 hover:text-gray-500"
                         onClick={() => setOpen(false)}
+                        aria-label="Close question sets panel"
                       >
                         <XMarkIcon className="h-6 w-6" />
                       </button>
@@ -149,7 +150,47 @@ export default function QuestionSetsManager({ open, setOpen, onEditClick }: Ques
                     )}
 
                     <div className="mt-6 space-y-4 px-4 sm:px-6">
-                      {sets.map((set) => (
+                      <div
+                        className={`relative p-4 rounded-lg border cursor-pointer ${
+                          'default' === activeSetId
+                            ? 'border-indigo-600 bg-indigo-50'
+                            : 'border-purple-200 bg-purple-50'
+                        }`}
+                        onClick={() => handleSetClick('default')}
+                      >
+                        <div className="pr-20">
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-medium text-gray-900">Default Analysis Set</h3>
+                            <span className="inline-flex items-center rounded-md bg-purple-100 px-2 py-1 text-xs font-medium text-purple-700">
+                              Default Template
+                            </span>
+                          </div>
+                          <p className="mt-1 text-sm text-gray-500">
+                            Standard set of questions for analyzing meeting content
+                          </p>
+                          <p className="mt-2 text-sm text-purple-600">
+                            This is the default template with standard meeting analysis questions. You can use it as a starting point for your own sets.
+                          </p>
+                        </div>
+                        
+                        <div className="absolute top-4 right-4 flex items-center gap-2">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setActiveSet('default');
+                              onEditClick();
+                              setOpen(false);
+                            }}
+                            className="p-1.5 text-purple-400 hover:text-purple-600 rounded-full hover:bg-purple-50"
+                            title="View Template"
+                            aria-label="View default template"
+                          >
+                            <PencilIcon className="h-5 w-5" />
+                          </button>
+                        </div>
+                      </div>
+
+                      {sets.filter(set => set.id !== 'default').map((set) => (
                         <div
                           key={set.id}
                           className={`relative p-4 rounded-lg border cursor-pointer ${
@@ -160,7 +201,9 @@ export default function QuestionSetsManager({ open, setOpen, onEditClick }: Ques
                           onClick={() => handleSetClick(set.id)}
                         >
                           <div className="pr-20">
-                            <h3 className="font-medium text-gray-900">{set.name}</h3>
+                            <div className="flex items-center gap-2">
+                              <h3 className="font-medium text-gray-900">{set.name}</h3>
+                            </div>
                             {set.description && (
                               <p className="mt-1 text-sm text-gray-500">
                                 {set.description}
@@ -178,19 +221,19 @@ export default function QuestionSetsManager({ open, setOpen, onEditClick }: Ques
                               }}
                               className="p-1.5 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100"
                               title="Edit Set"
+                              aria-label={`Edit ${set.name}`}
                             >
                               <PencilIcon className="h-5 w-5" />
                             </button>
                             
-                            {set.id !== 'default' && (
-                              <button
-                                onClick={(e) => handleDeleteSet(set.id, set.name, e)}
-                                className="p-1.5 text-red-400 hover:text-red-600 rounded-full hover:bg-red-50"
-                                title="Delete Set"
-                              >
-                                <TrashIcon className="h-5 w-5" />
-                              </button>
-                            )}
+                            <button
+                              onClick={(e) => handleDeleteSet(set.id, set.name, e)}
+                              className="p-1.5 text-red-400 hover:text-red-600 rounded-full hover:bg-red-50"
+                              title="Delete Set"
+                              aria-label={`Delete ${set.name}`}
+                            >
+                              <TrashIcon className="h-5 w-5" />
+                            </button>
                           </div>
                         </div>
                       ))}

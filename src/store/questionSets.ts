@@ -1,7 +1,43 @@
 import { create } from 'zustand';
 import { getAllQuestionSets, addQuestionSet, deleteQuestionSet, updateQuestionSet } from '../api/questionSets';
-import sowQuestions from '../../Questions.json';
 import { toast } from 'react-hot-toast';
+
+export const defaultQuestions = {
+  project_questions: [
+    {
+      category: "Meeting Overview",
+      questions: [
+        { text: "What is the main purpose or objective of this meeting?" },
+        { text: "Who are the key participants in the meeting?" },
+        { text: "What are the main topics or agenda items discussed?" }
+      ]
+    },
+    {
+      category: "Key Decisions",
+      questions: [
+        { text: "What major decisions were made during the meeting?" },
+        { text: "What are the agreed-upon next steps or action items?" },
+        { text: "Are there any deadlines or timelines mentioned?" }
+      ]
+    },
+    {
+      category: "Action Items",
+      questions: [
+        { text: "What specific tasks or assignments were delegated?" },
+        { text: "Who is responsible for each action item?" },
+        { text: "What are the follow-up requirements discussed?" }
+      ]
+    },
+    {
+      category: "Discussion Points",
+      questions: [
+        { text: "What are the main challenges or concerns raised?" },
+        { text: "What solutions or alternatives were proposed?" },
+        { text: "Were there any unresolved issues or points requiring further discussion?" }
+      ]
+    }
+  ]
+};
 
 export interface Question {
   text: string;
@@ -43,8 +79,16 @@ export const useQuestionSets = create<QuestionSetsState>((set, get) => ({
     set({ loading: true });
     try {
       const sets = await getAllQuestionSets();
+      const defaultSet = {
+        id: 'default',
+        name: 'Default Analysis Set',
+        description: 'Standard set of questions for analyzing meeting content',
+        questions: defaultQuestions,
+        created_at: new Date(0)
+      };
+      
       set({ 
-        sets, 
+        sets: [defaultSet, ...sets.filter(s => s.id !== 'default')],
         activeSetId: sets.length > 0 ? sets[0].id : 'default',
         loading: false 
       });

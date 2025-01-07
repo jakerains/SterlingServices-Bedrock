@@ -4,16 +4,49 @@ import { CloudArrowUpIcon } from '@heroicons/react/24/outline';
 import { useFileStore } from '../store/file';
 import toast from 'react-hot-toast';
 
+// Debug logger
+const debug = (action: string, data?: any) => {
+  console.log('[FileUpload]', action, data || '');
+};
+
 export default function FileUpload() {
   const { setFile } = useFileStore();
 
-  const onDrop = useCallback((acceptedFiles: File[]) => {
+  const onDrop = useCallback((acceptedFiles: File[], rejectedFiles: any[]) => {
+    debug('onDrop called', { 
+      acceptedCount: acceptedFiles.length,
+      rejectedCount: rejectedFiles.length,
+      rejectedFiles: rejectedFiles.map(f => ({
+        file: f.file.name,
+        type: f.file.type,
+        size: f.file.size,
+        errors: f.errors.map(e => ({ code: e.code, message: e.message }))
+      }))
+    });
+    
+    if (rejectedFiles.length > 0) {
+      const error = rejectedFiles[0].errors[0];
+      toast.error(error.message);
+      return;
+    }
+    
     if (acceptedFiles.length > 0) {
       const file = acceptedFiles[0];
-      if (file.size > 10 * 1024 * 1024) {
-        toast.error('File size must be less than 10MB');
+      debug('File received', { 
+        name: file.name, 
+        type: file.type, 
+        size: file.size 
+      });
+
+      // Validate file type
+      const validTypes = ['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/x-wav', 'audio/x-m4a', 'audio/aac', 'application/octet-stream'];
+      if (!validTypes.includes(file.type) && !file.name.toLowerCase().endsWith('.mp3')) {
+        debug('Invalid file type');
+        toast.error('Please upload an MP3, WAV, M4A, or AAC file');
         return;
       }
+
+      debug('Setting file in store');
       setFile(file);
       toast.success('File uploaded successfully');
     }
@@ -22,12 +55,16 @@ export default function FileUpload() {
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
-      'audio/*': ['.mp3', '.wav'],
-      'text/*': ['.txt'],
-      'application/pdf': ['.pdf'],
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
+      'audio/mpeg': ['.mp3'],
+      'audio/mp3': ['.mp3'],
+      'audio/wav': ['.wav'],
+      'audio/x-wav': ['.wav'],
+      'audio/x-m4a': ['.m4a'],
+      'audio/aac': ['.aac'],
+      'application/octet-stream': ['.mp3', '.wav', '.m4a', '.aac']
     },
-    maxSize: 10 * 1024 * 1024,
+    multiple: false,
+    // Remove maxSize restriction as we'll handle large files in the upload process
   });
 
   return (
@@ -41,7 +78,7 @@ export default function FileUpload() {
         {isDragActive ? "Drop the file here..." : "Upload a file or drag and drop"}
       </h3>
       <p className="mt-1 text-sm text-gray-500">
-        MP3, WAV, TXT, PDF, or DOCX up to 10MB
+        MP3, WAV, M4A, or AAC files supported
       </p>
     </div>
   );

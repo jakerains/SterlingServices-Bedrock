@@ -3,6 +3,7 @@ import { Dialog, Transition } from '@headlessui/react';
 import { XMarkIcon, ChevronDoubleLeftIcon } from '@heroicons/react/24/outline';
 import { useQuestions } from '../store/questions';
 import { useWindowSize } from '../hooks/useWindowSize';
+import { defaultQuestions } from '../store/questionSets';
 
 interface SidebarProps {
   open: boolean;
@@ -45,6 +46,7 @@ export default function Sidebar({ open, setOpen }: SidebarProps) {
                 <button
                   onClick={() => setOpen(false)}
                   className="rounded-md text-gray-400 hover:text-gray-500"
+                  aria-label="Close sidebar"
                 >
                   <XMarkIcon className="h-6 w-6" />
                 </button>
@@ -62,20 +64,58 @@ function SidebarContent({ questions }: { questions: any }) {
   return (
     <nav className="flex flex-1 flex-col p-4">
       <ul role="list" className="flex flex-1 flex-col gap-y-7">
-        {questions.project_questions.map((category: any) => (
-          <li key={category.category}>
-            <div className="text-sm font-semibold leading-6 text-gray-900">
-              {category.category}
+        {/* Default Questions Section */}
+        <li>
+          <div className="flex items-center gap-2 mb-2">
+            <div className="text-sm font-semibold leading-6 text-purple-700">
+              Default Questions
             </div>
-            <ul role="list" className="mt-2 space-y-2">
-              {category.questions.map((question: any, idx: number) => (
-                <li key={idx} className="text-sm leading-6 text-gray-600">
-                  {typeof question === 'string' ? question : question.text}
+            <span className="inline-flex items-center rounded-md bg-purple-100 px-2 py-1 text-xs font-medium text-purple-700">
+              Template
+            </span>
+          </div>
+          <ul role="list" className="mt-2 space-y-4">
+            {defaultQuestions.project_questions.map((category: any) => (
+              <li key={category.category}>
+                <div className="text-sm font-medium leading-6 text-gray-900">
+                  {category.category}
+                </div>
+                <ul role="list" className="mt-2 space-y-2 border-l-2 border-purple-100">
+                  {category.questions.map((question: any, idx: number) => (
+                    <li key={idx} className="text-sm leading-6 text-gray-600 pl-4">
+                      {typeof question === 'string' ? question : question.text}
+                    </li>
+                  ))}
+                </ul>
+              </li>
+            ))}
+          </ul>
+        </li>
+
+        {/* Custom Questions Section */}
+        {questions.project_questions.length > 0 && (
+          <li>
+            <div className="text-sm font-semibold leading-6 text-gray-900 mb-2">
+              Custom Questions
+            </div>
+            <ul role="list" className="mt-2 space-y-4">
+              {questions.project_questions.map((category: any) => (
+                <li key={category.category}>
+                  <div className="text-sm font-medium leading-6 text-gray-900">
+                    {category.category}
+                  </div>
+                  <ul role="list" className="mt-2 space-y-2">
+                    {category.questions.map((question: any, idx: number) => (
+                      <li key={idx} className="text-sm leading-6 text-gray-600">
+                        {typeof question === 'string' ? question : question.text}
+                      </li>
+                    ))}
+                  </ul>
                 </li>
               ))}
             </ul>
           </li>
-        ))}
+        )}
       </ul>
     </nav>
   );
