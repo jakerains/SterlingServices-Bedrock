@@ -23,14 +23,19 @@ const validateConfig = () => {
   const bucket = import.meta.env.VITE_AWS_BUCKET_NAME;
   const hasAccessKey = !!import.meta.env.VITE_AWS_ACCESS_KEY_ID;
   const hasSecretKey = !!import.meta.env.VITE_AWS_SECRET_ACCESS_KEY;
+  const modelId = import.meta.env.VITE_AWS_BEDROCK_MODEL_ID;
 
-  debug('Config', { region, bucket, hasAccessKey, hasSecretKey });
+  debug('Config', { region, bucket, hasAccessKey, hasSecretKey, hasModelId: !!modelId });
 
   if (!region || !bucket || !hasAccessKey || !hasSecretKey) {
     throw new Error('Missing required AWS configuration');
   }
 
-  return { region, bucket };
+  if (!modelId) {
+    throw new Error('Missing required Bedrock model ID');
+  }
+
+  return { region, bucket, modelId };
 };
 
 // Initialize AWS clients
@@ -225,10 +230,13 @@ ${text}
 Please provide a clear and concise answer based solely on the information provided in the transcript. If the information is not available in the transcript, please state that explicitly.`;
 
         const command = new InvokeModelCommand({
-          modelId: import.meta.env.VITE_AWS_BEDROCK_MODEL_ID,
+          modelId: config.modelId,
           contentType: 'application/json',
           accept: 'application/json',
           body: JSON.stringify({
+            inferenceConfig: {
+              max_new_tokens: 1000
+            },
             messages: [
               {
                 role: "user",
@@ -238,22 +246,31 @@ Please provide a clear and concise answer based solely on the information provid
                   }
                 ]
               }
-            ],
-            inferenceConfig: {
-              maxTokens: 500,
-              temperature: 0.7,
-              topP: 0.9,
-              stopSequences: []
-            }
+            ]
           }),
+        });
+
+        debug('Bedrock request', { 
+          modelId: config.modelId,
+          promptLength: prompt.length
         });
 
         const response = await bedrockClient.send(command);
         const responseBody = JSON.parse(new TextDecoder().decode(response.body));
         
         let answer = 'No response received';
+        debug('Bedrock response', { 
+          status: response.$metadata.httpStatusCode,
+          hasOutput: !!responseBody.output,
+          hasMessage: !!responseBody.output?.message,
+          hasContent: !!responseBody.output?.message?.content
+        });
+        
         if (responseBody.output?.message?.content?.[0]?.text) {
           answer = responseBody.output.message.content[0].text.trim();
+        } else {
+          debug('Invalid response format', responseBody);
+          throw new Error('Invalid response format from Bedrock');
         }
         
         answers.push({
