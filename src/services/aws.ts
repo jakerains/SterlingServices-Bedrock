@@ -19,21 +19,37 @@ const debug = (action: string, data?: any) => {
 
 // Validate environment variables
 const validateConfig = () => {
+  // Log all environment variables (without sensitive values)
+  debug('Environment Check', {
+    hasRegion: !!import.meta.env.VITE_AWS_REGION,
+    hasBucket: !!import.meta.env.VITE_AWS_BUCKET_NAME,
+    hasAccessKey: !!import.meta.env.VITE_AWS_ACCESS_KEY_ID,
+    hasSecretKey: !!import.meta.env.VITE_AWS_SECRET_ACCESS_KEY,
+    region: import.meta.env.VITE_AWS_REGION,
+    bucket: import.meta.env.VITE_AWS_BUCKET_NAME
+  });
+
   const region = import.meta.env.VITE_AWS_REGION;
   const bucket = import.meta.env.VITE_AWS_BUCKET_NAME;
   const hasAccessKey = !!import.meta.env.VITE_AWS_ACCESS_KEY_ID;
   const hasSecretKey = !!import.meta.env.VITE_AWS_SECRET_ACCESS_KEY;
-  const modelId = import.meta.env.VITE_AWS_BEDROCK_MODEL_ID;
-
-  debug('Config', { region, bucket, hasAccessKey, hasSecretKey, hasModelId: !!modelId });
+  const modelId = 'amazon.nova-lite-v1:0'; // Hardcoded model ID
 
   if (!region || !bucket || !hasAccessKey || !hasSecretKey) {
-    throw new Error('Missing required AWS configuration');
+    const missing = [];
+    if (!region) missing.push('VITE_AWS_REGION');
+    if (!bucket) missing.push('VITE_AWS_BUCKET_NAME');
+    if (!hasAccessKey) missing.push('VITE_AWS_ACCESS_KEY_ID');
+    if (!hasSecretKey) missing.push('VITE_AWS_SECRET_ACCESS_KEY');
+    throw new Error(`Missing required AWS configuration: ${missing.join(', ')}`);
   }
 
-  if (!modelId) {
-    throw new Error('Missing required Bedrock model ID');
-  }
+  debug('Config Validated', { 
+    region, 
+    bucket, 
+    modelId,
+    hasCredentials: hasAccessKey && hasSecretKey 
+  });
 
   return { region, bucket, modelId };
 };
