@@ -35,22 +35,14 @@ export default function QuestionEditor({ onClose }: QuestionEditorProps) {
     questions: activeSet.questions
   });
 
-  // Initialize expanded categories and edited set
+  // Expand all categories by default
   useEffect(() => {
-    // Update edited set
-    setEditedSet({
-      name: activeSet.name,
-      description: activeSet.description || '',
-      questions: activeSet.questions
-    });
-
-    // Initialize expanded categories
     const initialExpanded = activeSet.questions.project_questions.reduce((acc, _, index) => {
       acc[index] = true;
       return acc;
     }, {} as { [key: number]: boolean });
     setExpandedCategories(initialExpanded);
-  }, [activeSet.name, activeSet.description, activeSetId]); // Only re-run when active set changes
+  }, [activeSet]);
 
   const handleAddCategory = () => {
     const newQuestions = { ...editedSet.questions };

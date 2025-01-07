@@ -37,25 +37,28 @@ const validateConfig = () => {
 const config = validateConfig();
 debug('Init', { region: config.region });
 
-// Common credentials config
-const credentials = {
-  accessKeyId: import.meta.env.VITE_AWS_ACCESS_KEY_ID,
-  secretAccessKey: import.meta.env.VITE_AWS_SECRET_ACCESS_KEY,
-};
-
 const s3Client = new S3Client({
   region: config.region,
-  credentials,
+  credentials: {
+    accessKeyId: import.meta.env.VITE_AWS_ACCESS_KEY_ID,
+    secretAccessKey: import.meta.env.VITE_AWS_SECRET_ACCESS_KEY,
+  },
 });
 
 const transcribeClient = new TranscribeClient({
   region: config.region,
-  credentials,
+  credentials: {
+    accessKeyId: import.meta.env.VITE_AWS_ACCESS_KEY_ID,
+    secretAccessKey: import.meta.env.VITE_AWS_SECRET_ACCESS_KEY,
+  },
 });
 
 const bedrockClient = new BedrockRuntimeClient({
   region: config.region,
-  credentials,
+  credentials: {
+    accessKeyId: import.meta.env.VITE_AWS_ACCESS_KEY_ID,
+    secretAccessKey: import.meta.env.VITE_AWS_SECRET_ACCESS_KEY,
+  },
 });
 
 // Upload file to S3
