@@ -24,7 +24,8 @@ export default function ResultsDisplay() {
   const handleNewTranscription = () => {
     // @ts-ignore - We know we want to set these to null to reset state
     setFile(null);
-    setResults([]);
+    // @ts-ignore - We know we want to set these to null to reset state
+    setResults(null);
     setProcessing(false);
     setCompleted(false);
     toast.success('Ready for new transcription');
