@@ -1,22 +1,35 @@
 import { useState } from 'react';
 import { useResults } from '../store/results';
+import { useFileStore } from '../store/file';
 import { saveAs } from 'file-saver';
 import { generatePDF } from '../utils/pdfGenerator';
 import { toast } from 'react-hot-toast';
 
 export default function ResultsDisplay() {
   const results = useResults((state) => state.results);
+  const setResults = useResults((state) => state.setResults);
+  const file = useFileStore((state) => state.file);
+  const { setFile, setProcessing, setCompleted } = useFileStore();
   const [selectedFormat, setSelectedFormat] = useState('pdf');
 
   if (!results) return null;
+
+  const handleNewTranscription = () => {
+    // @ts-ignore - We know we want to set these to null to reset state
+    setFile(null);
+    setResults([]);
+    setProcessing(false);
+    setCompleted(false);
+    toast.success('Ready for new transcription');
+  };
 
   const downloadResults = async () => {
     try {
       if (selectedFormat === 'pdf') {
         const pdfBuffer = await generatePDF(results);
-        const companyName = results[0]?.answers[0]?.answer || 'Client';
+        const baseName = file?.name ? file.name.replace(/\.[^/.]+$/, '') : 'Analysis';
         const blob = new Blob([pdfBuffer as BlobPart], { type: 'application/pdf' });
-        saveAs(blob, `${companyName} Analysis.pdf`);
+        saveAs(blob, `${baseName} Analysis.pdf`);
       } else {
         switch (selectedFormat) {
           case 'txt':
@@ -31,7 +44,8 @@ export default function ResultsDisplay() {
               )
               .join('\n\n');
             const textBlob = new Blob([textContent], { type: 'text/plain' });
-            saveAs(textBlob, 'results.txt');
+            const txtName = file?.name ? file.name.replace(/\.[^/.]+$/, '') : 'results';
+            saveAs(textBlob, `${txtName}.txt`);
             break;
           case 'docx':
             const docxContent = results
@@ -45,7 +59,8 @@ export default function ResultsDisplay() {
             const docxBlob = new Blob([docxContent], {
               type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
             });
-            saveAs(docxBlob, 'results.docx');
+            const docxName = file?.name ? file.name.replace(/\.[^/.]+$/, '') : 'results';
+            saveAs(docxBlob, `${docxName}.docx`);
             break;
         }
       }
@@ -62,6 +77,12 @@ export default function ResultsDisplay() {
           Analysis Results
         </h2>
         <div className="flex items-center gap-4">
+          <button
+            onClick={handleNewTranscription}
+            className="rounded-lg bg-gradient-to-r from-green-600 to-teal-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:from-green-500 hover:to-teal-500 transition-all duration-200 ease-in-out transform hover:scale-105"
+          >
+            New Transcription
+          </button>
           <select
             value={selectedFormat}
             onChange={(e) => setSelectedFormat(e.target.value as any)}

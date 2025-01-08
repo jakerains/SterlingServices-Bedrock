@@ -2,10 +2,61 @@ import pdfMake from "pdfmake/build/pdfmake";
 import "pdfmake/build/vfs_fonts";
 import { sterlingLogoBase64 } from './constants';
 
-export function generatePDF(results: any[]) {
-  // Get company name from first result (Company Information category)
-  const companyName = results[0]?.answers[0]?.answer || 'Client';
+function processMarkdown(text: string): any[] {
+  // Split text into lines
+  const lines = text.split('\n');
+  const processedContent: any[] = [];
+  let currentList: any[] = [];
+  let inList = false;
 
+  lines.forEach((line) => {
+    // Handle bold text
+    line = line.replace(/\*\*(.*?)\*\*/g, '$1');
+    
+    // Check if line is a numbered list item
+    const numberedMatch = line.match(/^\d+\.\s+(.*)/);
+    // Check if line is a bullet point
+    const bulletMatch = line.match(/^[-•]\s+(.*)/);
+
+    if (numberedMatch || bulletMatch) {
+      if (!inList) {
+        inList = true;
+        currentList = [];
+      }
+      currentList.push({
+        text: (numberedMatch || bulletMatch)[1],
+        margin: [10, 0, 0, 5]
+      });
+    } else {
+      if (inList) {
+        processedContent.push({
+          ul: currentList,
+          margin: [20, 5, 0, 10]
+        });
+        inList = false;
+        currentList = [];
+      }
+      if (line.trim()) {
+        processedContent.push({
+          text: line,
+          margin: [0, 0, 0, 5]
+        });
+      }
+    }
+  });
+
+  // Add any remaining list items
+  if (inList && currentList.length > 0) {
+    processedContent.push({
+      ul: currentList,
+      margin: [20, 5, 0, 10]
+    });
+  }
+
+  return processedContent;
+}
+
+export function generatePDF(results: any[]) {
   const docDefinition = {
     pageSize: 'A4',
     pageMargins: [40, 60, 40, 60],
@@ -15,18 +66,36 @@ export function generatePDF(results: any[]) {
         margin: [0, 0, 0, 20]
       },
       title: {
-        fontSize: 24,
+        fontSize: 20,
         bold: true,
         alignment: 'center',
         margin: [0, 0, 0, 10],
-        color: '#4F46E5'
+        color: '#000000'
       },
       subtitle: {
-        fontSize: 18,
+        fontSize: 16,
         bold: true,
         alignment: 'center',
         margin: [0, 0, 0, 30],
-        color: '#4F46E5'
+        color: '#000000'
+      },
+      category: {
+        fontSize: 14,
+        bold: true,
+        margin: [0, 15, 0, 10],
+        color: '#000000'
+      },
+      question: {
+        fontSize: 12,
+        bold: true,
+        margin: [0, 10, 0, 5],
+        color: '#000000'
+      },
+      answer: {
+        fontSize: 11,
+        margin: [0, 0, 0, 10],
+        color: '#000000',
+        lineHeight: 1.4
       }
     },
     content: [
@@ -36,31 +105,22 @@ export function generatePDF(results: any[]) {
         style: 'logo'
       },
       {
-        text: companyName,
+        text: 'Sterling Services Analysis',
         style: 'title'
-      },
-      {
-        text: 'Analysis Results',
-        style: 'subtitle'
       },
       ...results.map((category: any) => [
         {
           text: category.category,
-          fontSize: 16,
-          bold: true,
-          margin: [0, 15, 0, 10]
+          style: 'category'
         },
         ...category.answers.map((qa: any) => [
           {
             text: qa.question,
-            fontSize: 12,
-            bold: true,
-            margin: [0, 10, 0, 5]
+            style: 'question'
           },
           {
-            text: qa.answer,
-            fontSize: 12,
-            margin: [0, 0, 0, 10]
+            stack: processMarkdown(qa.answer),
+            style: 'answer'
           }
         ]).flat()
       ]).flat()
