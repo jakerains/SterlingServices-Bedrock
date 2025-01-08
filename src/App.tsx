@@ -1,11 +1,17 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import MainContent from './components/MainContent';
 import { Toaster } from 'react-hot-toast';
+import { useQuestionSets } from './store/questionSets';
 
 export default function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const fetchSets = useQuestionSets((state) => state.fetchSets);
+
+  useEffect(() => {
+    fetchSets();
+  }, [fetchSets]);
 
   return (
     <div className="min-h-screen bg-gray-50">

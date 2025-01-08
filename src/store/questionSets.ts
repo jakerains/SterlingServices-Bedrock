@@ -1,5 +1,8 @@
 import { create } from 'zustand';
 import { Category } from './questions';
+import { QuestionSet } from '../services/questionSets';
+import * as QuestionSetService from '../services/questionSets';
+import { toast } from 'react-hot-toast';
 
 export interface QuestionSet {
   id: string;
@@ -14,10 +17,12 @@ export interface QuestionSet {
 interface QuestionSetsState {
   sets: QuestionSet[];
   activeSetId: string;
+  loading: boolean;
   setActiveSet: (id: string) => void;
-  addSet: (set: Omit<QuestionSet, 'id'>) => void;
-  updateSet: (id: string, updates: Partial<QuestionSet>) => void;
-  deleteSet: (id: string) => void;
+  addSet: (set: Omit<QuestionSet, 'id' | 'created_at'>) => Promise<void>;
+  updateSet: (id: string, updates: Partial<QuestionSet>) => Promise<void>;
+  deleteSet: (id: string) => Promise<void>;
+  fetchSets: () => Promise<void>;
 }
 
 // Statement of Work template
@@ -198,17 +203,73 @@ const defaultSets: QuestionSet[] = [
 export const useQuestionSets = create<QuestionSetsState>((set) => ({
   sets: defaultSets,
   activeSetId: 'sow',
+  loading: false,
+
   setActiveSet: (id) => set({ activeSetId: id }),
-  addSet: (newSet) => set((state) => ({
-    sets: [...state.sets, { ...newSet, id: Date.now().toString() }]
-  })),
-  updateSet: (id, updates) => set((state) => ({
-    sets: state.sets.map((set) =>
-      set.id === id && !set.isDefault ? { ...set, ...updates } : set
-    )
-  })),
-  deleteSet: (id) => set((state) => ({
-    sets: state.sets.filter((set) => set.id !== id || set.isDefault),
-    activeSetId: state.activeSetId === id ? 'sow' : state.activeSetId
-  }))
+
+  fetchSets: async () => {
+    set({ loading: true });
+    try {
+      const cloudSets = await QuestionSetService.fetchQuestionSets();
+      set((state) => ({
+        sets: [...defaultSets, ...cloudSets.filter(s => !s.isDefault)]
+      }));
+    } catch (error) {
+      console.error('Error fetching question sets:', error);
+      toast.error('Failed to fetch question sets');
+    } finally {
+      set({ loading: false });
+    }
+  },
+
+  addSet: async (newSet) => {
+    set({ loading: true });
+    try {
+      const createdSet = await QuestionSetService.createQuestionSet(newSet);
+      set((state) => ({
+        sets: [...state.sets, createdSet]
+      }));
+      toast.success('Question set created successfully');
+    } catch (error) {
+      console.error('Error creating question set:', error);
+      toast.error('Failed to create question set');
+    } finally {
+      set({ loading: false });
+    }
+  },
+
+  updateSet: async (id, updates) => {
+    set({ loading: true });
+    try {
+      const updatedSet = await QuestionSetService.updateQuestionSet(id, updates);
+      set((state) => ({
+        sets: state.sets.map((set) =>
+          set.id === id && !set.isDefault ? updatedSet : set
+        )
+      }));
+      toast.success('Question set updated successfully');
+    } catch (error) {
+      console.error('Error updating question set:', error);
+      toast.error('Failed to update question set');
+    } finally {
+      set({ loading: false });
+    }
+  },
+
+  deleteSet: async (id) => {
+    set({ loading: true });
+    try {
+      await QuestionSetService.deleteQuestionSet(id);
+      set((state) => ({
+        sets: state.sets.filter((set) => set.id !== id || set.isDefault),
+        activeSetId: state.activeSetId === id ? 'sow' : state.activeSetId
+      }));
+      toast.success('Question set deleted successfully');
+    } catch (error) {
+      console.error('Error deleting question set:', error);
+      toast.error('Failed to delete question set');
+    } finally {
+      set({ loading: false });
+    }
+  }
 }));
