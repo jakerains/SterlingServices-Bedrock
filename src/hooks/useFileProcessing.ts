@@ -1,7 +1,7 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useFileStore } from '../store/file';
 import { useResults } from '../store/results';
-import { useQuestions } from '../store/questions';
+import { useQuestionStore } from '../store/questions';
 import { processFile } from '../services/fileProcessing';
 import toast from 'react-hot-toast';
 
@@ -13,7 +13,7 @@ const debug = (action: string, data?: any) => {
 export default function useFileProcessing() {
   const { file, processing, completed, setProcessing, setCompleted } = useFileStore();
   const { setResults } = useResults();
-  const questions = useQuestions((state) => state.questions);
+  const questions = useQuestionStore(state => state.project_questions);
 
   useEffect(() => {
     debug('Effect triggered', { 
@@ -29,11 +29,16 @@ export default function useFileProcessing() {
           debug('Starting file processing');
           setProcessing(true);
           
+          // Validate questions structure
+          if (!Array.isArray(questions)) {
+            throw new Error('Questions not loaded');
+          }
+          
           debug('Processing file', { 
             fileName: file.name,
             fileType: file.type,
             fileSize: file.size,
-            questionCount: questions?.project_questions?.length
+            questionCount: questions.reduce((total, category) => total + category.questions.length, 0)
           });
 
           const results = await processFile(file, questions);
@@ -44,10 +49,10 @@ export default function useFileProcessing() {
             setCompleted(true);
             toast.success('Processing completed successfully');
           }
-        } catch (error) {
+        } catch (error: any) {
           debug('Processing error', { error });
           
-          const errorMessage = error.message || 'Unknown error occurred';
+          const errorMessage = error?.message || 'Unknown error occurred';
           if (!errorMessage.includes('Failed to delete file from S3')) {
             if (errorMessage.includes('AccessDenied')) {
               toast.error('AWS access denied - check your permissions');
@@ -66,5 +71,5 @@ export default function useFileProcessing() {
 
       process();
     }
-  }, [file, processing, completed, questions, setProcessing, setCompleted, setResults]);
+  }, [file, processing, completed, setProcessing, setCompleted, setResults, questions]);
 }

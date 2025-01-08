@@ -1,53 +1,5 @@
 import { create } from 'zustand';
-import { getAllQuestionSets, addQuestionSet, deleteQuestionSet, updateQuestionSet } from '../api/questionSets';
-import { toast } from 'react-hot-toast';
-
-export const defaultQuestions = {
-  project_questions: [
-    {
-      category: "Meeting Overview",
-      questions: [
-        { text: "What is the main purpose or objective of this meeting?" },
-        { text: "Who are the key participants in the meeting?" },
-        { text: "What are the main topics or agenda items discussed?" }
-      ]
-    },
-    {
-      category: "Key Decisions",
-      questions: [
-        { text: "What major decisions were made during the meeting?" },
-        { text: "What are the agreed-upon next steps or action items?" },
-        { text: "Are there any deadlines or timelines mentioned?" }
-      ]
-    },
-    {
-      category: "Action Items",
-      questions: [
-        { text: "What specific tasks or assignments were delegated?" },
-        { text: "Who is responsible for each action item?" },
-        { text: "What are the follow-up requirements discussed?" }
-      ]
-    },
-    {
-      category: "Discussion Points",
-      questions: [
-        { text: "What are the main challenges or concerns raised?" },
-        { text: "What solutions or alternatives were proposed?" },
-        { text: "Were there any unresolved issues or points requiring further discussion?" }
-      ]
-    }
-  ]
-};
-
-export interface Question {
-  text: string;
-  instruction?: string;
-}
-
-export interface Category {
-  category: string;
-  questions: (Question | string)[];
-}
+import { Category } from './questions';
 
 export interface QuestionSet {
   id: string;
@@ -56,103 +8,207 @@ export interface QuestionSet {
   questions: {
     project_questions: Category[];
   };
+  isDefault?: boolean;
 }
 
 interface QuestionSetsState {
   sets: QuestionSet[];
   activeSetId: string;
-  addSet: (set: Omit<QuestionSet, 'id'>) => Promise<string>;
-  updateSet: (id: string, set: Partial<QuestionSet>) => Promise<void>;
-  deleteSet: (id: string) => Promise<void>;
   setActiveSet: (id: string) => void;
-  importSet: (file: File) => Promise<void>;
-  loadSets: () => Promise<void>;
-  loading: boolean;
+  addSet: (set: Omit<QuestionSet, 'id'>) => void;
+  updateSet: (id: string, updates: Partial<QuestionSet>) => void;
+  deleteSet: (id: string) => void;
 }
 
-export const useQuestionSets = create<QuestionSetsState>((set, get) => ({
-  sets: [],
-  activeSetId: 'default',
-  loading: false,
-  
-  loadSets: async () => {
-    set({ loading: true });
-    try {
-      const sets = await getAllQuestionSets();
-      const defaultSet = {
-        id: 'default',
-        name: 'Default Analysis Set',
-        description: 'Standard set of questions for analyzing meeting content',
-        questions: defaultQuestions,
-        created_at: new Date(0)
-      };
-      
-      set({ 
-        sets: [defaultSet, ...sets.filter(s => s.id !== 'default')],
-        activeSetId: sets.length > 0 ? sets[0].id : 'default',
-        loading: false 
-      });
-    } catch (error) {
-      console.error('Error loading question sets:', error);
-      set({ loading: false });
-    }
+// Statement of Work template
+export const sowQuestions: Category[] = [
+  {
+    category: "Project Overview",
+    questions: [
+      {
+        text: "What is the primary objective of the project?",
+        instruction: ""
+      },
+      {
+        text: "What are the key deliverables?",
+        instruction: "Give me this as a bulleted list with sub items broken out."
+      },
+      {
+        text: "What are the success criteria for the project?",
+        instruction: ""
+      }
+    ]
   },
-  
-  addSet: async (newSet) => {
-    try {
-      const id = await addQuestionSet(newSet);
-      set((state) => ({
-        sets: [...state.sets, { ...newSet, id }],
-      }));
-      return id;
-    } catch (error) {
-      toast.error('Failed to add question set');
-      throw error;
-    }
+  {
+    category: "Scope of Work",
+    questions: [
+      { text: "What tasks need to be completed?", instruction: "" },
+      { text: "What are the specific requirements and constraints?", instruction: "" },
+      { text: "Are there any assumptions or exclusions?", instruction: "" }
+    ]
   },
-  
-  deleteSet: async (id) => {
-    try {
-      await deleteQuestionSet(id);
-      set((state) => ({
-        sets: state.sets.filter((set) => set.id !== id),
-      }));
-    } catch (error) {
-      toast.error('Failed to delete question set');
-      throw error;
-    }
+  {
+    category: "Project Deliverables",
+    questions: [
+      { text: "What are the specific deliverables and their descriptions?", instruction: "" },
+      { text: "What are the deadlines for each deliverable?", instruction: "" },
+      { text: "What are the acceptance criteria for each deliverable?", instruction: "" }
+    ]
   },
-  
-  updateSet: async (id, updatedSet) => {
-    try {
-      await updateQuestionSet(id, updatedSet);
-      set((state) => ({
-        sets: state.sets.map((set) =>
-          set.id === id ? { ...set, ...updatedSet } : set
-        ),
-      }));
-    } catch (error) {
-      toast.error('Failed to update question set');
-      throw error;
-    }
+  {
+    category: "Timeline and Milestones",
+    questions: [
+      { text: "What is the project start date?", instruction: "" },
+      { text: "What is the project end date?", instruction: "" },
+      { text: "What are the major milestones and their deadlines?", instruction: "" }
+    ]
   },
+  {
+    category: "Roles and Responsibilities",
+    questions: [
+      { text: "Who are the key stakeholders?", instruction: "" },
+      { text: "What are the roles and responsibilities of each team member?", instruction: "" },
+      { text: "Are there any third-party vendors or partners involved?", instruction: "" }
+    ]
+  },
+  {
+    category: "Budget and Payment Terms",
+    questions: [
+      { text: "What is the total budget for the project?", instruction: "" },
+      { text: "How will payments be structured (e.g., fixed Fee price, Fixed Fee Milestones, or time and materials)?", instruction: "" },
+      { text: "What are the payment milestones?", instruction: "" }
+    ]
+  },
+  {
+    category: "Project Management and Reporting",
+    questions: [
+      { text: "What project management methodology will be used?", instruction: "" },
+      { text: "How will progress be tracked and reported?", instruction: "" },
+      { text: "What tools and software will be used for project management and communication?", instruction: "" }
+    ]
+  },
+  {
+    category: "Risk Management",
+    questions: [
+      { text: "What are the potential risks and their mitigation strategies?", instruction: "" },
+      { text: "Who is responsible for managing risks?", instruction: "" }
+    ]
+  },
+  {
+    category: "Legal and Compliance",
+    questions: [
+      { text: "Are there any legal or regulatory requirements that need to be addressed?", instruction: "" },
+      { text: "What are the confidentiality and non-disclosure requirements?", instruction: "" }
+    ]
+  },
+  {
+    category: "Post-Project Support",
+    questions: [
+      { text: "Will there be any post-project support or maintenance required?", instruction: "" },
+      { text: "What are the terms for post-project support?", instruction: "" }
+    ]
+  },
+  {
+    category: "Dependencies and Constraints",
+    questions: [
+      { text: "Are there any dependencies on other projects or external factors?", instruction: "" },
+      { text: "What constraints could impact the project?", instruction: "" }
+    ]
+  }
+];
 
-  setActiveSet: (id) => {
-    set({ activeSetId: id });
+// Past Performance template
+export const pastPerformanceQuestions: Category[] = [
+  {
+    category: "Contract Details",
+    questions: [
+      { text: "What was the Name and Project ID of this project?", instruction: "" },
+      { text: "Was Sterling the prime contractor or a subcontractor?", instruction: "" },
+      { text: "Who was the 'contractual point of contact' from the client?", instruction: "" },
+      { text: "Who was the 'technical contact' from the client?", instruction: "" },
+      { text: "Was this a new contract or extension/renewal contract?", instruction: "" },
+      { text: "What was the start and end date of the contract?", instruction: "" },
+      { 
+        text: "Was this contract Services-only or did it include hardware?",
+        instruction: "If it included hardware, please provide a summary of what HW was included."
+      },
+      { text: "Name each Sterling person (with their title/role) involved with this project", instruction: "" },
+      { text: "If partners were used, please name each person (with their title/role) involved with this project.", instruction: "" }
+    ]
   },
+  {
+    category: "Description of Services",
+    questions: [
+      {
+        text: "What type of Sterling Services were included?",
+        instruction: "List options: Client Services, Warehousing/Shipping, Enterprise Professional Services, Managed Services, Combination"
+      },
+      { text: "Provide a summary of the requested services from the Client?", instruction: "" },
+      { text: "What technology/solutions were sought by client?", instruction: "" },
+      { text: "What capabilities/specialized knowledge did Sterling perform?", instruction: "" },
+      { text: "What work/services did client need performed and why?", instruction: "" },
+      { text: "What IT challenges/problems/issues/'pain points' was Sterling hired to address/resolve/fix?", instruction: "" },
+      {
+        text: "Describe the process of the work",
+        instruction: "Include details like project phases, chronology, and regular activities (daily/weekly/monthly)."
+      },
+      {
+        text: "What specific technologies did Sterling use to perform the work?",
+        instruction: "Provide details of hardware (including brand names) and software (including brand names)."
+      }
+    ]
+  },
+  {
+    category: "Outcome of Project",
+    questions: [
+      { text: "Describe the goal or successful outcome for the client?", instruction: "" },
+      { text: "Describe the list of deliverables provided during the project?", instruction: "" },
+      { text: "Were there any additional benefits to the client/successes beyond the required work?", instruction: "" },
+      { text: "Provide client's response to or evaluation of Sterling's performance?", instruction: "" }
+    ]
+  },
+  {
+    category: "Lessons Learned",
+    questions: [
+      { text: "What lessons were learned in doing this project?", instruction: "" },
+      { text: "What improvements can be made for successful future projects?", instruction: "" },
+      { text: "Is there anything else we should record about the project?", instruction: "" }
+    ]
+  }
+];
 
-  importSet: async (file) => {
-    try {
-      const text = await file.text();
-      const importedSet = JSON.parse(text);
-      const id = await addQuestionSet(importedSet);
-      set((state) => ({
-        sets: [...state.sets, { ...importedSet, id }],
-      }));
-      toast.success('Question set imported successfully');
-    } catch (error) {
-      toast.error('Failed to import question set');
-      throw error;
-    }
+// Default question sets
+const defaultSets: QuestionSet[] = [
+  {
+    id: 'sow',
+    name: 'Statement of Work',
+    description: 'Standard set of questions for creating a Statement of Work',
+    questions: { project_questions: sowQuestions },
+    isDefault: true
   },
+  {
+    id: 'past-performance',
+    name: 'Past Performance',
+    description: 'Standard set of questions for analyzing past project performance',
+    questions: { project_questions: pastPerformanceQuestions },
+    isDefault: true
+  }
+];
+
+export const useQuestionSets = create<QuestionSetsState>((set) => ({
+  sets: defaultSets,
+  activeSetId: 'sow',
+  setActiveSet: (id) => set({ activeSetId: id }),
+  addSet: (newSet) => set((state) => ({
+    sets: [...state.sets, { ...newSet, id: Date.now().toString() }]
+  })),
+  updateSet: (id, updates) => set((state) => ({
+    sets: state.sets.map((set) =>
+      set.id === id && !set.isDefault ? { ...set, ...updates } : set
+    )
+  })),
+  deleteSet: (id) => set((state) => ({
+    sets: state.sets.filter((set) => set.id !== id || set.isDefault),
+    activeSetId: state.activeSetId === id ? 'sow' : state.activeSetId
+  }))
 }));

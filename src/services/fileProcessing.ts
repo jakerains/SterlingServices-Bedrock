@@ -85,9 +85,12 @@ export async function processFile(file: File, questions: any) {
     setProgress(0);
     debug('Starting Bedrock analysis');
     
+    // Wrap questions in the expected format
+    const wrappedQuestions = { project_questions: questions };
+    
     results = await analyzeWithBedrock(
       text, 
-      questions,
+      wrappedQuestions,
       setStatusMessage,
       setProgress
     );

@@ -1,0 +1,53 @@
+{
+    "project_questions": [
+      {
+        "category": "Contract Details",
+        "questions": [
+          {"text": "What was the Name and Project ID of this project?", "instruction": ""},
+          {"text": "Was Sterling the prime contractor or a subcontractor?", "instruction": ""},
+          {"text": "Who was the 'contractual point of contact' from the client?", "instruction": ""},
+          {"text": "Who was the 'technical contact' from the client?", "instruction": ""},
+          {"text": "Was this a new contract or extension/renewal contract?", "instruction": ""},
+          {"text": "What was the start and end date of the contract?", "instruction": ""},
+          {"text": "Was this contract Services-only or did it include hardware?", 
+           "instruction": "If it included hardware, please provide a summary of what HW was included."},
+          {"text": "Name each Sterling person (with their title/role) involved with this project", "instruction": ""},
+          {"text": "If partners were used, please name each person (with their title/role) involved with this project.", "instruction": ""}
+        ]
+      },
+      {
+        "category": "Description of Services",
+        "questions": [
+          {"text": "What type of Sterling Services were included?", 
+           "instruction": "List options: Client Services, Warehousing/Shipping, Enterprise Professional Services, Managed Services, Combination"},
+          {"text": "Provide a summary of the requested services from the Client?", "instruction": ""},
+          {"text": "What technology/solutions were sought by client?", "instruction": ""},
+          {"text": "What capabilities/specialized knowledge did Sterling perform?", "instruction": ""},
+          {"text": "What work/services did client need performed and why?", "instruction": ""},
+          {"text": "What IT challenges/problems/issues/'pain points' was Sterling hired to address/resolve/fix?", "instruction": ""},
+          {"text": "Describe the process of the work", 
+           "instruction": "Include details like project phases, chronology, and regular activities (daily/weekly/monthly)."},
+          {"text": "What specific technologies did Sterling use to perform the work?", 
+           "instruction": "Provide details of hardware (including brand names) and software (including brand names)."}
+        ]
+      },
+      {
+        "category": "Outcome of Project",
+        "questions": [
+          {"text": "Describe the goal or successful outcome for the client?", "instruction": ""},
+          {"text": "Describe the list of deliverables provided during the project?", "instruction": ""},
+          {"text": "Were there any additional benefits to the client/successes beyond the required work?", "instruction": ""},
+          {"text": "Provide client's response to or evaluation of Sterling's performance?", "instruction": ""}
+        ]
+      },
+      {
+        "category": "Lessons Learned",
+        "questions": [
+          {"text": "What lessons were learned in doing this project?", "instruction": ""},
+          {"text": "What improvements can be made for successful future projects?", "instruction": ""},
+          {"text": "Is there anything else we should record about the project?", "instruction": ""}
+        ]
+      }
+    ]
+  }
+  

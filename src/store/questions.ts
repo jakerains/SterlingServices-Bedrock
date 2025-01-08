@@ -16,7 +16,7 @@ interface QuestionState {
 }
 
 // Default questions from Questions.json
-const defaultQuestions: Category[] = [
+export const defaultQuestions: Category[] = [
   {
     category: "Project Overview",
     questions: [
