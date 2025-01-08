@@ -5,26 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [4.0.0] - 2024-03-23
+## [3.5.0] - 2024-03-24
 
 ### Added
-- Complete rewrite in React/Vite/TypeScript
-- New responsive UI with Tailwind CSS
-- Real-time progress updates
-- Automatic company name detection
-- Enhanced PDF generation with company branding
-- Persistent question set management with IndexedDB
+- Enhanced button styling with glow effects
+- Progress bar for file upload process
+- Improved visual feedback for user interactions
 
 ### Changed
-- Migrated from Streamlit to React-based architecture
-- Improved AWS service integration
-- Enhanced error handling and user feedback
-- Streamlined analysis workflow
-- Updated branding and UI components
-
-### Removed
-- Python/Streamlit dependencies
-- Local file system operations
+- Updated UI components with consistent styling
+- Enhanced button hover effects
+- Improved progress tracking for uploads
 
 ## [3.2.0] - 2024-03-22
 

@@ -1,18 +1,25 @@
 import { useState } from 'react';
 import { useResults } from '../store/results';
 import { useFileStore } from '../store/file';
+import { useQuestionSets } from '../store/questionSets';
 import { saveAs } from 'file-saver';
 import { generatePDF } from '../utils/pdfGenerator';
 import { toast } from 'react-hot-toast';
+import './ResultsDisplay.css';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 export default function ResultsDisplay() {
   const results = useResults((state) => state.results);
   const setResults = useResults((state) => state.setResults);
   const file = useFileStore((state) => state.file);
   const { setFile, setProcessing, setCompleted } = useFileStore();
+  const { sets, activeSetId } = useQuestionSets();
   const [selectedFormat, setSelectedFormat] = useState('pdf');
 
   if (!results) return null;
+
+  const activeSet = sets.find(s => s.id === activeSetId);
 
   const handleNewTranscription = () => {
     // @ts-ignore - We know we want to set these to null to reset state
@@ -72,33 +79,46 @@ export default function ResultsDisplay() {
 
   return (
     <div className="mx-auto max-w-5xl">
-      <div className="mb-6 flex items-center justify-between">
-        <h2 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-          Analysis Results
-        </h2>
-        <div className="flex items-center gap-4">
-          <button
-            onClick={handleNewTranscription}
-            className="rounded-lg bg-gradient-to-r from-green-600 to-teal-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:from-green-500 hover:to-teal-500 transition-all duration-200 ease-in-out transform hover:scale-105"
-          >
-            New Transcription
-          </button>
-          <select
-            value={selectedFormat}
-            onChange={(e) => setSelectedFormat(e.target.value as any)}
-            className="rounded-lg border-gray-300 py-2 pl-3 pr-10 text-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 shadow-sm"
-            aria-label="Download format"
-          >
-            <option value="pdf">PDF</option>
-            <option value="txt">TXT</option>
-            <option value="docx">DOCX</option>
-          </select>
-          <button
-            onClick={downloadResults}
-            className="rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:from-indigo-500 hover:to-purple-500 transition-all duration-200 ease-in-out transform hover:scale-105"
-          >
-            Download Results
-          </button>
+      <div className="mb-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+              Analysis Results
+            </h2>
+            {activeSet && (
+              <p className="mt-1 text-sm text-gray-600">
+                Using question set: <span className="font-medium text-indigo-600">{activeSet.name}</span>
+              </p>
+            )}
+          </div>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={handleNewTranscription}
+              className="glow-base glow-action new-transcription-btn"
+            >
+              <div className="flex items-center gap-1.5">
+                New Transcription
+              </div>
+            </button>
+            <select
+              value={selectedFormat}
+              onChange={(e) => setSelectedFormat(e.target.value as any)}
+              className="rounded-lg border-gray-300 py-2 pl-3 pr-10 text-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 shadow-sm"
+              aria-label="Download format"
+            >
+              <option value="pdf">PDF</option>
+              <option value="txt">TXT</option>
+              <option value="docx">DOCX</option>
+            </select>
+            <button
+              onClick={downloadResults}
+              className="glow-base glow-action download-btn"
+            >
+              <div className="flex items-center gap-1.5">
+                Download Results
+              </div>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -136,10 +156,13 @@ export default function ResultsDisplay() {
                         <span className="text-sm font-medium">A</span>
                       </div>
                     </div>
-                    <div className="flex-1">
-                      <p className="text-gray-600 leading-relaxed whitespace-pre-line">
+                    <div className="flex-1 prose prose-sm max-w-none">
+                      <ReactMarkdown 
+                        remarkPlugins={[remarkGfm]}
+                        className="text-gray-600 leading-relaxed"
+                      >
                         {qa.answer}
-                      </p>
+                      </ReactMarkdown>
                     </div>
                   </div>
                 </div>

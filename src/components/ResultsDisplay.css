@@ -1,0 +1,118 @@
+.glow-on-hover {
+    min-width: 140px;
+    height: 38px;
+    border: none;
+    outline: none;
+    color: #fff;
+    cursor: pointer;
+    position: relative;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    padding: 0 1rem;
+}
+
+/* Base styles for all glow buttons */
+.glow-base {
+    position: relative;
+    isolation: isolate;
+    cursor: pointer;
+    z-index: 0;
+    border: none;
+    outline: none;
+    font-size: 0.875rem;
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    min-height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+}
+
+.glow-base:before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    background-size: 400%;
+    z-index: -2;
+    filter: blur(5px);
+    width: calc(100% + 4px);
+    height: calc(100% + 4px);
+    animation: glowing 20s linear infinite;
+    opacity: 0;
+    transition: opacity .3s ease-in-out;
+    border-radius: inherit;
+    pointer-events: none;
+}
+
+.glow-base:after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    background: inherit;
+    pointer-events: none;
+}
+
+.glow-base:hover:before {
+    opacity: 0.6;
+}
+
+/* Ensure button content stays above glow */
+.glow-base > * {
+    position: relative;
+    z-index: 1;
+    pointer-events: none;
+}
+
+/* Specific button styles */
+.new-transcription-btn {
+    color: #14AFDF;
+    min-width: 140px;
+    transition: color 0.2s ease-in-out;
+}
+
+.new-transcription-btn:hover {
+    color: #0E8BB2;
+}
+
+.new-transcription-btn:before {
+    background: #14AFDF !important;
+}
+
+.download-btn {
+    color: #4f46e5;
+    min-width: 140px;
+    transition: color 0.2s ease-in-out;
+}
+
+.download-btn:hover {
+    color: #4338ca;
+}
+
+.download-btn:before {
+    background: #4f46e5 !important;
+}
+
+/* Sidebar specific glows */
+.glow-indigo:before {
+    background: #4f46e5;
+}
+
+.glow-gray:before {
+    background: #4B5563;
+}
+
+.glow-action:before {
+    background: #4f46e5;
+}
+
+@keyframes glowing {
+    0% { background-position: 0 0; }
+    50% { background-position: 400% 0; }
+    100% { background-position: 0 0; }
+} 

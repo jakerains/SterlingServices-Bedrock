@@ -11,6 +11,7 @@ import {
   CheckIcon
 } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
+import './ResultsDisplay.css';
 
 interface QuestionEditorProps {
   onClose: () => void;
@@ -111,10 +112,12 @@ export default function QuestionEditor({ onClose }: QuestionEditorProps) {
           {view !== 'initial' && (
             <button
               onClick={() => setView('initial')}
-              className="p-2 text-gray-400 hover:text-gray-500 rounded-lg"
+              className="glow-base glow-action p-2 text-gray-400 hover:text-gray-500 rounded-lg bg-white"
               aria-label="Go back"
             >
-              <ArrowLeftIcon className="h-5 w-5" />
+              <div className="flex items-center justify-center">
+                <ArrowLeftIcon className="h-5 w-5" />
+              </div>
             </button>
           )}
           <div>
@@ -132,10 +135,12 @@ export default function QuestionEditor({ onClose }: QuestionEditorProps) {
         </div>
         <button
           onClick={onClose}
-          className="p-2 text-gray-400 hover:text-gray-500 rounded-lg"
+          className="glow-base glow-action p-2 text-gray-400 hover:text-gray-500 rounded-lg bg-white"
           aria-label="Close editor"
         >
-          <XMarkIcon className="h-6 w-6" />
+          <div className="flex items-center justify-center">
+            <XMarkIcon className="h-6 w-6" />
+          </div>
         </button>
       </div>
 
@@ -144,24 +149,31 @@ export default function QuestionEditor({ onClose }: QuestionEditorProps) {
         <div className="grid grid-cols-2 gap-4">
           <button
             onClick={() => setView('manual')}
-            className="flex flex-col items-center p-6 rounded-xl border-2 border-gray-200 hover:border-indigo-200 hover:bg-gray-50 transition-all duration-200"
+            className="glow-base glow-action flex flex-col items-center p-6 rounded-xl border-2 border-gray-200 hover:border-indigo-200 bg-white transition-all duration-200"
+            tabIndex={0}
+            autoFocus
           >
-            <PencilSquareIcon className="h-8 w-8 mb-4 text-gray-400" />
-            <h3 className="text-lg font-medium text-gray-900">Manual Entry</h3>
-            <p className="mt-2 text-sm text-gray-500 text-center">
-              Create categories and questions manually
-            </p>
+            <div className="flex flex-col items-center">
+              <PencilSquareIcon className="h-8 w-8 mb-4 text-gray-400" />
+              <h3 className="text-lg font-medium text-gray-900">Manual Entry</h3>
+              <p className="mt-2 text-sm text-gray-500 text-center">
+                Create categories and questions manually
+              </p>
+            </div>
           </button>
 
           <button
             onClick={() => setView('import')}
-            className="flex flex-col items-center p-6 rounded-xl border-2 border-gray-200 hover:border-indigo-200 hover:bg-gray-50 transition-all duration-200"
+            className="glow-base glow-action flex flex-col items-center p-6 rounded-xl border-2 border-gray-200 hover:border-indigo-200 bg-white transition-all duration-200"
+            tabIndex={0}
           >
-            <ArrowUpTrayIcon className="h-8 w-8 mb-4 text-gray-400" />
-            <h3 className="text-lg font-medium text-gray-900">Import Questions</h3>
-            <p className="mt-2 text-sm text-gray-500 text-center">
-              Import questions from a document or spreadsheet
-            </p>
+            <div className="flex flex-col items-center">
+              <ArrowUpTrayIcon className="h-8 w-8 mb-4 text-gray-400" />
+              <h3 className="text-lg font-medium text-gray-900">Import Questions</h3>
+              <p className="mt-2 text-sm text-gray-500 text-center">
+                Import questions from a document or spreadsheet
+              </p>
+            </div>
           </button>
         </div>
       )}
@@ -253,7 +265,7 @@ export default function QuestionEditor({ onClose }: QuestionEditorProps) {
             {editedSet.questions.project_questions.map((category, categoryIndex) => (
               <div key={categoryIndex} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                 <div className="flex items-center justify-between p-4 bg-gray-50 border-b border-gray-200">
-                  <div className="flex-1 flex items-center gap-2">
+                  <div className="flex-1 flex items-center gap-2 mr-4">
                     <input
                       type="text"
                       value={category.category}
@@ -265,16 +277,17 @@ export default function QuestionEditor({ onClose }: QuestionEditorProps) {
                       className="w-full text-lg font-medium bg-white border border-gray-200 hover:border-indigo-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 rounded-md px-3 py-1.5 transition-colors duration-200"
                       placeholder="Enter category name..."
                     />
-                    <PencilSquareIcon className="h-5 w-5 text-gray-400" />
                   </div>
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => handleAddQuestion(categoryIndex)}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 rounded-lg transition-colors duration-200 font-medium"
+                      className="glow-base glow-action inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-indigo-600 hover:text-indigo-700 bg-white rounded-lg transition-colors duration-200 font-medium"
                       title="Add Question"
                     >
-                      <PlusIcon className="h-4 w-4" />
-                      New Question
+                      <div className="flex items-center gap-1.5">
+                        <PlusIcon className="h-4 w-4" />
+                        <span>New Question</span>
+                      </div>
                     </button>
                     <button
                       onClick={() => {
@@ -282,10 +295,12 @@ export default function QuestionEditor({ onClose }: QuestionEditorProps) {
                         newQuestions.project_questions.splice(categoryIndex, 1);
                         setEditedSet(prev => ({ ...prev, questions: newQuestions }));
                       }}
-                      className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200"
+                      className="glow-base glow-action p-1.5 text-gray-500 hover:text-red-600 bg-white rounded-lg transition-colors duration-200"
                       title="Delete Category"
                     >
-                      <TrashIcon className="h-5 w-5" />
+                      <div className="flex items-center justify-center">
+                        <TrashIcon className="h-5 w-5" />
+                      </div>
                     </button>
                   </div>
                 </div>
@@ -310,14 +325,16 @@ export default function QuestionEditor({ onClose }: QuestionEditorProps) {
                             <div className="flex items-center gap-1">
                               <button
                                 onClick={() => toggleInstructionInput(categoryIndex, questionIndex)}
-                                className={`p-1.5 rounded-lg transition-colors duration-200 ${
+                                className={`glow-base glow-action p-1.5 rounded-lg transition-colors duration-200 bg-white ${
                                   question.instruction
-                                    ? 'text-indigo-600 bg-indigo-50 hover:bg-indigo-100'
-                                    : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+                                    ? 'text-indigo-600 hover:text-indigo-700'
+                                    : 'text-gray-400 hover:text-gray-600'
                                 }`}
                                 title={question.instruction ? "Edit Instructions" : "Add Model Instructions"}
                               >
-                                <InformationCircleIcon className="h-5 w-5" />
+                                <div className="flex items-center justify-center">
+                                  <InformationCircleIcon className="h-5 w-5" />
+                                </div>
                               </button>
                               <button
                                 onClick={() => {
@@ -325,10 +342,12 @@ export default function QuestionEditor({ onClose }: QuestionEditorProps) {
                                   newQuestions.project_questions[categoryIndex].questions.splice(questionIndex, 1);
                                   setEditedSet(prev => ({ ...prev, questions: newQuestions }));
                                 }}
-                                className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200"
+                                className="glow-base glow-action p-1.5 text-gray-400 hover:text-red-600 bg-white rounded-lg transition-colors duration-200"
                                 title="Delete Question"
                               >
-                                <TrashIcon className="h-5 w-5" />
+                                <div className="flex items-center justify-center">
+                                  <TrashIcon className="h-5 w-5" />
+                                </div>
                               </button>
                             </div>
                           </div>
@@ -343,10 +362,12 @@ export default function QuestionEditor({ onClose }: QuestionEditorProps) {
                                 </div>
                                 <button
                                   onClick={() => setShowInstructionInput(null)}
-                                  className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-indigo-600 bg-indigo-50 rounded-md hover:bg-indigo-100"
+                                  className="glow-base glow-action inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-indigo-600 bg-white rounded-md hover:text-indigo-700"
                                 >
-                                  <CheckIcon className="h-3 w-3" />
-                                  Save
+                                  <div className="flex items-center gap-1">
+                                    <CheckIcon className="h-3 w-3" />
+                                    <span>Save</span>
+                                  </div>
                                 </button>
                               </div>
                               <textarea
@@ -375,17 +396,21 @@ export default function QuestionEditor({ onClose }: QuestionEditorProps) {
           <div className="flex justify-between items-center pt-4">
             <button
               onClick={handleAddCategory}
-              className="inline-flex items-center gap-x-1.5 px-4 py-2 rounded-lg bg-white text-indigo-600 border-2 border-indigo-600 hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors duration-200"
+              className="glow-base glow-action inline-flex items-center gap-x-1.5 px-4 py-2 rounded-lg bg-white text-indigo-600 border-2 border-indigo-600 hover:text-indigo-700 transition-colors duration-200"
             >
-              <PlusIcon className="h-5 w-5" />
-              Add Category
+              <div className="flex items-center gap-1.5">
+                <PlusIcon className="h-5 w-5" />
+                <span>Add Category</span>
+              </div>
             </button>
 
             <button
               onClick={handleSaveSet}
-              className="inline-flex items-center px-6 py-2 rounded-lg text-white bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 shadow-sm transition-all duration-200"
+              className="glow-base glow-action inline-flex items-center px-6 py-2 rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 transition-colors duration-200"
             >
-              Save Question Set
+              <div className="flex items-center">
+                <span>Save Question Set</span>
+              </div>
             </button>
           </div>
         </div>

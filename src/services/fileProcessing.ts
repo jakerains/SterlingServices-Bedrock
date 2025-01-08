@@ -29,8 +29,14 @@ export async function processFile(file: File, questions: any) {
     setStatusMessage('Uploading file to S3...');
     setProgress(0);
     debug('Uploading to S3', { fileName });
-    await uploadToS3(file, fileName);
-    setProgress(100);
+    await uploadToS3(file, fileName, (progress) => {
+      setProgress(progress);
+      if (progress < 100) {
+        setStatusMessage(`Uploading file to S3... ${progress}%`);
+      } else {
+        setStatusMessage('Upload complete');
+      }
+    });
     debug('S3 upload complete');
     toast.success('File uploaded to S3');
 

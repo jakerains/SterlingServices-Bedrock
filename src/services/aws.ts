@@ -83,7 +83,11 @@ const bedrockClient = new BedrockRuntimeClient({
 });
 
 // Upload file to S3
-export async function uploadToS3(file: File, fileName: string): Promise<void> {
+export async function uploadToS3(
+  file: File, 
+  fileName: string,
+  onProgress?: (progress: number) => void
+): Promise<void> {
   debug('Upload', { fileName, type: file.type, size: file.size });
   
   try {
@@ -117,6 +121,10 @@ export async function uploadToS3(file: File, fileName: string): Promise<void> {
 
         await s3Client.send(command);
         debug('Chunk uploaded', { chunk: i + 1 });
+        
+        // Calculate and report progress
+        const progress = Math.round(((i + 1) / chunks) * 90); // Leave 10% for final combination
+        onProgress?.(progress);
       }
       
       // After all chunks are uploaded, combine them
@@ -130,10 +138,13 @@ export async function uploadToS3(file: File, fileName: string): Promise<void> {
 
       await s3Client.send(command);
       debug('Upload complete', { fileName });
+      onProgress?.(100);
     } else {
       // For small files, use regular upload
       const arrayBuffer = await file.arrayBuffer();
       const fileData = new Uint8Array(arrayBuffer);
+      
+      onProgress?.(50); // Show some progress for small files
       
       const command = new PutObjectCommand({
         Bucket: config.bucket,
@@ -144,6 +155,7 @@ export async function uploadToS3(file: File, fileName: string): Promise<void> {
 
       await s3Client.send(command);
       debug('Upload complete', { fileName });
+      onProgress?.(100);
     }
   } catch (error) {
     debug('Upload error', { error });

@@ -11,6 +11,7 @@ import { Fragment, useState } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import QuestionEditor from './QuestionEditor';
 import QuestionSetViewer from './QuestionSetViewer';
+import './ResultsDisplay.css';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -78,12 +79,18 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                     <div className="flex items-center justify-between mb-2">
                       <h2 className="text-xl font-semibold text-gray-900">Question Sets</h2>
                       <button
-                        onClick={() => setIsCreatingNew(true)}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 rounded-lg transition-colors duration-200"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setIsCreatingNew(true);
+                        }}
+                        className="glow-base glow-action inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-indigo-600 hover:text-indigo-700 bg-white rounded-lg transition-colors duration-200"
                         title="Add new set"
                       >
-                        <PlusIcon className="h-5 w-5" />
-                        <span>New Set</span>
+                        <div className="flex items-center gap-1.5">
+                          <PlusIcon className="h-5 w-5" />
+                          <span>New Set</span>
+                        </div>
                       </button>
                     </div>
                     <p className="text-sm text-gray-500">Select a set to use or click the eye icon to preview</p>
@@ -97,7 +104,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                           className={`relative group rounded-lg border transition-all duration-200 ${
                             activeSetId === set.id
                               ? 'border-indigo-200 bg-indigo-50 shadow-sm'
-                              : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                              : 'border-gray-200 hover:border-gray-300'
                           }`}
                         >
                           <button
@@ -105,7 +112,9 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                               setActiveSet(set.id);
                               onClose();
                             }}
-                            className="w-full p-4 text-left"
+                            className={`glow-base ${
+                              activeSetId === set.id ? 'glow-indigo' : 'glow-gray'
+                            } w-full p-4 text-left rounded-lg bg-white`}
                           >
                             <div className="flex items-start gap-3">
                               <div className={`mt-1 ${
@@ -137,7 +146,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                                 e.stopPropagation();
                                 setViewingSetId(set.id);
                               }}
-                              className={`p-1.5 rounded-lg transition-colors duration-200 ${
+                              className={`glow-base glow-action p-1.5 rounded-lg transition-colors duration-200 bg-white ${
                                 activeSetId === set.id
                                   ? 'text-indigo-600 hover:bg-indigo-100'
                                   : 'text-gray-400 hover:text-indigo-600 hover:bg-indigo-50'
@@ -152,7 +161,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                                   e.stopPropagation();
                                   setEditingSetId(set.id);
                                 }}
-                                className={`p-1.5 rounded-lg transition-colors duration-200 ${
+                                className={`glow-base glow-action p-1.5 rounded-lg transition-colors duration-200 bg-white ${
                                   activeSetId === set.id
                                     ? 'text-indigo-600 hover:bg-indigo-100'
                                     : 'text-gray-400 hover:text-indigo-600 hover:bg-indigo-50'
@@ -176,12 +185,50 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
       {/* Question Editor Modal */}
       {(editingSetId || isCreatingNew) && (
-        <QuestionEditor 
-          onClose={() => {
+        <Transition.Root show={true} as={Fragment}>
+          <Dialog as="div" className="relative z-50" onClose={() => {
             setEditingSetId(null);
             setIsCreatingNew(false);
-          }}
-        />
+          }} initialFocus={undefined}>
+            <Transition.Child
+              as={Fragment}
+              enter="ease-out duration-300"
+              enterFrom="opacity-0"
+              enterTo="opacity-100"
+              leave="ease-in duration-200"
+              leaveFrom="opacity-100"
+              leaveTo="opacity-0"
+            >
+              <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
+            </Transition.Child>
+
+            <div className="fixed inset-0 z-50 overflow-y-auto">
+              <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+                <Transition.Child
+                  as={Fragment}
+                  enter="ease-out duration-300"
+                  enterFrom="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                  enterTo="opacity-100 translate-y-0 sm:scale-100"
+                  leave="ease-in duration-200"
+                  leaveFrom="opacity-100 translate-y-0 sm:scale-100"
+                  leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                >
+                  <Dialog.Panel 
+                    className="relative transform rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-4xl"
+                    tabIndex={-1}
+                  >
+                    <QuestionEditor 
+                      onClose={() => {
+                        setEditingSetId(null);
+                        setIsCreatingNew(false);
+                      }}
+                    />
+                  </Dialog.Panel>
+                </Transition.Child>
+              </div>
+            </div>
+          </Dialog>
+        </Transition.Root>
       )}
 
       {/* Question Set Viewer Modal */}
