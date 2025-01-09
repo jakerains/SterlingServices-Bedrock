@@ -5,18 +5,6 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [3.6.0] - 2024-03-24
-
-### Added
-- Cloud synchronization for question sets using AWS Amplify
-- Real-time sharing of custom question sets between users
-- Improved state management with cloud persistence
-
-### Changed
-- Updated question set management to use AWS DataStore
-- Enhanced error handling for cloud operations
-- Improved feedback for question set operations
-
 ## [3.5.0] - 2024-03-24
 
 ### Added

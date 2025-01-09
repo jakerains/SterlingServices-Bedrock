@@ -1,7 +1,5 @@
 import { generateClient } from 'aws-amplify/api';
-import { Schema } from '../../amplify/data/resource';
-
-const client = generateClient<Schema>();
+import { GraphQLResult } from '@aws-amplify/api-graphql';
 
 export interface QuestionSet {
   id: string;
@@ -17,39 +15,126 @@ export interface QuestionSet {
     }>;
   };
   isDefault?: boolean;
-  created_at?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
+
+const client = generateClient<{ QuestionSet: QuestionSet }>();
 
 export async function fetchQuestionSets() {
   try {
-    const response = await client.models.QuestionSet.list();
-    return response.data;
+    const query = /* GraphQL */ `
+      query ListQuestionSets {
+        listQuestionSets {
+          items {
+            id
+            name
+            description
+            questions
+            isDefault
+            createdAt
+            updatedAt
+          }
+        }
+      }
+    `;
+
+    const result = (await client.graphql({
+      query,
+    })) as GraphQLResult<{
+      listQuestionSets: {
+        items: QuestionSet[];
+      };
+    }>;
+
+    return result.data?.listQuestionSets.items || [];
   } catch (error) {
     console.error('Error fetching question sets:', error);
     throw error;
   }
 }
 
-export async function createQuestionSet(set: Omit<QuestionSet, 'id' | 'created_at'>) {
+export async function createQuestionSet(set: Omit<QuestionSet, 'id' | 'createdAt' | 'updatedAt'>) {
   try {
-    const response = await client.models.QuestionSet.create({
+    const mutation = /* GraphQL */ `
+      mutation CreateQuestionSet($input: CreateQuestionSetInput!) {
+        createQuestionSet(input: $input) {
+          id
+          name
+          description
+          questions
+          isDefault
+          createdAt
+          updatedAt
+        }
+      }
+    `;
+
+    // Convert questions to a JSON string since it's stored as a JSON field
+    const input = {
       ...set,
-      created_at: new Date().toISOString()
-    });
-    return response.data;
+      questions: JSON.stringify(set.questions),
+      isDefault: set.isDefault || false,
+    };
+
+    const result = (await client.graphql({
+      query: mutation,
+      variables: {
+        input,
+      },
+    })) as GraphQLResult<{
+      createQuestionSet: QuestionSet;
+    }>;
+
+    if (!result.data?.createQuestionSet) {
+      throw new Error('Failed to create question set: No data returned');
+    }
+
+    // Parse the questions back from JSON string
+    return {
+      ...result.data.createQuestionSet,
+      questions: JSON.parse(result.data.createQuestionSet.questions as string)
+    };
   } catch (error) {
-    console.error('Error creating question set:', error);
+    console.error('Error creating question set:', {
+      error,
+      errorDetails: error.errors?.[0]?.message,
+      input: set
+    });
     throw error;
   }
 }
 
-export async function updateQuestionSet(id: string, updates: Partial<QuestionSet>) {
+export async function updateQuestionSet(id: string, updates: Partial<Omit<QuestionSet, 'id' | 'createdAt' | 'updatedAt'>>) {
   try {
-    const response = await client.models.QuestionSet.update({
-      id,
-      ...updates,
-    });
-    return response.data;
+    const mutation = /* GraphQL */ `
+      mutation UpdateQuestionSet($input: UpdateQuestionSetInput!) {
+        updateQuestionSet(input: $input) {
+          id
+          name
+          description
+          questions
+          isDefault
+          createdAt
+          updatedAt
+        }
+      }
+    `;
+
+    const result = (await client.graphql({
+      query: mutation,
+      variables: {
+        input: {
+          id,
+          ...updates,
+          updatedAt: new Date().toISOString(),
+        },
+      },
+    })) as GraphQLResult<{
+      updateQuestionSet: QuestionSet;
+    }>;
+
+    return result.data?.updateQuestionSet;
   } catch (error) {
     console.error('Error updating question set:', error);
     throw error;
@@ -58,10 +143,30 @@ export async function updateQuestionSet(id: string, updates: Partial<QuestionSet
 
 export async function deleteQuestionSet(id: string) {
   try {
-    const response = await client.models.QuestionSet.delete({
-      id
-    });
-    return response.data;
+    const mutation = /* GraphQL */ `
+      mutation DeleteQuestionSet($input: DeleteQuestionSetInput!) {
+        deleteQuestionSet(input: $input) {
+          id
+          name
+          description
+          questions
+          isDefault
+          createdAt
+          updatedAt
+        }
+      }
+    `;
+
+    const result = (await client.graphql({
+      query: mutation,
+      variables: {
+        input: { id },
+      },
+    })) as GraphQLResult<{
+      deleteQuestionSet: QuestionSet;
+    }>;
+
+    return result.data?.deleteQuestionSet;
   } catch (error) {
     console.error('Error deleting question set:', error);
     throw error;

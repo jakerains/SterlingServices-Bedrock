@@ -1,3 +1,5 @@
+import { generateClient } from 'aws-amplify/api';
+import { GraphQLResult } from '@aws-amplify/api-graphql';
 import {
   S3Client,
   PutObjectCommand,
@@ -168,10 +170,22 @@ export async function startTranscription(fileName: string, jobName: string): Pro
   debug('StartTranscription', { fileName, jobName });
   
   try {
+    const fileExtension = fileName.split('.').pop()?.toLowerCase();
+    const mediaFormat = fileExtension === 'mp3' ? 'mp3' :
+                       fileExtension === 'mp4' ? 'mp4' :
+                       fileExtension === 'wav' ? 'wav' :
+                       fileExtension === 'flac' ? 'flac' :
+                       fileExtension === 'm4a' ? 'm4a' :
+                       undefined;
+
+    if (!mediaFormat) {
+      throw new Error(`Unsupported media format: ${fileExtension}`);
+    }
+
     const command = new StartTranscriptionJobCommand({
       TranscriptionJobName: jobName,
       Media: { MediaFileUri: `s3://${config.bucket}/${fileName}` },
-      MediaFormat: fileName.split('.').pop()?.toLowerCase(),
+      MediaFormat: mediaFormat,
       LanguageCode: 'en-US',
       OutputBucketName: config.bucket,
     });
@@ -196,8 +210,7 @@ export async function getTranscriptionStatus(jobName: string) {
     const response = await transcribeClient.send(command);
     debug('Got transcription status', { 
       jobName,
-      status: response.TranscriptionJob?.TranscriptionJobStatus,
-      progress: response.TranscriptionJob?.Progress
+      status: response.TranscriptionJob?.TranscriptionJobStatus
     });
     
     return response;
@@ -330,3 +343,163 @@ Please provide a clear and concise answer based solely on the information provid
     throw error;
   }
 }
+
+// QuestionSet Type
+type QuestionSet = {
+  id: string;
+  name: string;
+  description: string;
+  questions: {
+    project_questions: Array<{
+      category: string;
+      questions: Array<{
+        text: string;
+        instruction: string;
+      }>;
+    }>;
+  };
+  isDefault?: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+// Generate the GraphQL client
+const client = generateClient<{ QuestionSet: QuestionSet }>();
+
+// QuestionSet operations
+export const createQuestionSet = async (input: Omit<QuestionSet, 'id' | 'createdAt' | 'updatedAt'>) => {
+  try {
+    const mutation = /* GraphQL */ `
+      mutation CreateQuestionSet($input: CreateQuestionSetInput!) {
+        createQuestionSet(input: $input) {
+          id
+          name
+          description
+          questions
+          isDefault
+          createdAt
+          updatedAt
+        }
+      }
+    `;
+
+    const result = (await client.graphql({
+      query: mutation,
+      variables: {
+        input: {
+          ...input,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        },
+      },
+    })) as GraphQLResult<{
+      createQuestionSet: QuestionSet;
+    }>;
+
+    return result.data?.createQuestionSet;
+  } catch (error) {
+    console.error('Error creating question set:', error);
+    throw error;
+  }
+};
+
+export const updateQuestionSet = async (id: string, input: Partial<Omit<QuestionSet, 'id' | 'createdAt' | 'updatedAt'>>) => {
+  try {
+    const mutation = /* GraphQL */ `
+      mutation UpdateQuestionSet($input: UpdateQuestionSetInput!) {
+        updateQuestionSet(input: $input) {
+          id
+          name
+          description
+          questions
+          isDefault
+          createdAt
+          updatedAt
+        }
+      }
+    `;
+
+    const result = (await client.graphql({
+      query: mutation,
+      variables: {
+        input: {
+          id,
+          ...input,
+          updatedAt: new Date().toISOString(),
+        },
+      },
+    })) as GraphQLResult<{
+      updateQuestionSet: QuestionSet;
+    }>;
+
+    return result.data?.updateQuestionSet;
+  } catch (error) {
+    console.error('Error updating question set:', error);
+    throw error;
+  }
+};
+
+export const deleteQuestionSet = async (id: string) => {
+  try {
+    const mutation = /* GraphQL */ `
+      mutation DeleteQuestionSet($input: DeleteQuestionSetInput!) {
+        deleteQuestionSet(input: $input) {
+          id
+          name
+          description
+          questions
+          isDefault
+          createdAt
+          updatedAt
+        }
+      }
+    `;
+
+    const result = (await client.graphql({
+      query: mutation,
+      variables: {
+        input: { id },
+      },
+    })) as GraphQLResult<{
+      deleteQuestionSet: QuestionSet;
+    }>;
+
+    return result.data?.deleteQuestionSet;
+  } catch (error) {
+    console.error('Error deleting question set:', error);
+    throw error;
+  }
+};
+
+export const fetchQuestionSets = async () => {
+  try {
+    const query = /* GraphQL */ `
+      query ListQuestionSets {
+        listQuestionSets {
+          items {
+            id
+            name
+            description
+            questions
+            isDefault
+            createdAt
+            updatedAt
+          }
+        }
+      }
+    `;
+
+    const result = (await client.graphql({
+      query,
+    })) as GraphQLResult<{
+      listQuestionSets: {
+        items: QuestionSet[];
+      };
+    }>;
+
+    return result.data?.listQuestionSets.items || [];
+  } catch (error) {
+    console.error('Error fetching question sets:', error);
+    throw error;
+  }
+};

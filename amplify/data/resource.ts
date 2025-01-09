@@ -1,42 +1,56 @@
-import { type ClientSchema, a, defineData } from '@aws-amplify/backend';
+import { a, defineData } from '@aws-amplify/backend';
 
 const schema = a.schema({
   QuestionSet: a.model({
     name: a.string().required(),
-    description: a.string(),
-    questions: a.json(),  // This will store the complex questions structure
-    created_at: a.datetime(),
+    description: a.string().required(),
+    questions: a.json().required(),
+    isDefault: a.boolean(),
+    createdAt: a.datetime(),
+    updatedAt: a.datetime(),
   }).authorization(allow => [
-    // Allow authenticated users to perform all operations
-    allow.authenticated().to(['create', 'read', 'update', 'delete']),
-    // Allow public read access using API key
-    allow.publicApiKey().to(['read'])
-  ]),
-
-  AnalysisResult: a.model({
-    fileName: a.string().required(),
-    content: a.string(),
-    results: a.json(),  // Store analysis results
-    created_at: a.datetime(),
-    owner: a.string(),  // To track who created the analysis
-  }).authorization(allow => [
-    // Only authenticated users can create/read/update/delete their own records
-    allow.owner().to(['create', 'read', 'update', 'delete']),
-    // Allow public read access using API key
-    allow.publicApiKey().to(['read'])
+    // Allow public access for all operations using API key
+    allow.publicApiKey().to(['create', 'read', 'update', 'delete'])
   ])
 });
 
-export type Schema = ClientSchema<typeof schema>;
+export type Schema = typeof schema;
 
 export const data = defineData({
   schema,
   authorizationModes: {
-    // Use user pool (Cognito) as default auth mode
-    defaultAuthorizationMode: 'userPool',
-    // Also enable API key for public access
+    defaultAuthorizationMode: 'apiKey',
     apiKeyAuthorizationMode: {
-      expiresInDays: 30
-    }
-  }
+      expiresInDays: 30,
+    },
+  },
 });
+
+/*== STEP 2 ===============================================================
+Go to your frontend source code. From your client-side code, generate a
+Data client to make CRUDL requests to your table. (THIS SNIPPET WILL ONLY
+WORK IN THE FRONTEND CODE FILE.)
+
+Using JavaScript or Next.js React Server Components, Middleware, Server 
+Actions or Pages Router? Review how to generate Data clients for those use
+cases: https://docs.amplify.aws/gen2/build-a-backend/data/connect-to-API/
+=========================================================================*/
+
+/*
+"use client"
+import { generateClient } from "aws-amplify/data";
+import type { Schema } from "@/amplify/data/resource";
+
+const client = generateClient<Schema>() // use this Data client for CRUDL requests
+*/
+
+/*== STEP 3 ===============================================================
+Fetch records from the database and use them in your frontend component.
+(THIS SNIPPET WILL ONLY WORK IN THE FRONTEND CODE FILE.)
+=========================================================================*/
+
+/* For example, in a React component, you can use this snippet in your
+  function's RETURN statement */
+// const { data: todos } = await client.models.Todo.list()
+
+// return <ul>{todos.map(todo => <li key={todo.id}>{todo.content}</li>)}</ul>
