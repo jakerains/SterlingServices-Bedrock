@@ -1,88 +1,121 @@
-# Sterling Services: Analysis ToolKit
+# Sterling Services: Analysis ToolKit 🛠️
 
-## Overview
+[![Version](https://img.shields.io/badge/version-3.5.1-blue.svg)](https://github.com/jakerains/sterling-services-bedrock)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)](https://nodejs.org/)
+[![React](https://img.shields.io/badge/React-18.2.0-61dafb.svg)](https://reactjs.org/)
+[![AWS](https://img.shields.io/badge/AWS-Bedrock%20%7C%20Transcribe-orange.svg)](https://aws.amazon.com/)
 
-The Sterling Services: Analysis ToolKit is a React-based application designed to automate and streamline the process of analyzing client meetings and conversations. It uses AWS Bedrock with Claude 3.5 Haiku to analyze transcripts and generate comprehensive answers to predefined analysis questions.
+<div align="center">
+  <img src="public/images/sterling.png" alt="Sterling Services Logo" width="200"/>
+  <p><em>Automated Analysis Tool for Client Meetings and Conversations</em></p>
+</div>
 
-## Features
+## 🌟 Overview
 
-- Audio transcription using AWS Transcribe
-- Automatic company name detection
-- AI-powered analysis using AWS Bedrock and Claude 3.5 Haiku
+The Sterling Services: Analysis ToolKit is a powerful React-based application that revolutionizes the way client meetings and conversations are analyzed. Leveraging AWS Bedrock with Claude 3.5 Haiku, it provides intelligent analysis and generates comprehensive answers to predefined questions.
+
+## ✨ Key Features
+
+🎙️ **Advanced Audio Processing**
+- Real-time audio transcription using AWS Transcribe
+- Automatic company name and entity detection
+- Support for multiple audio formats (MP3, WAV, M4A)
+
+🤖 **AI-Powered Analysis**
+- Integration with AWS Bedrock (Claude 3.5 Haiku model)
+- Intelligent context understanding
+- Customizable analysis parameters
+
+📊 **Data Management**
 - Persistent question set management with IndexedDB
-- Real-time progress tracking
-- Multiple output formats (PDF, TXT, DOCX)
-- Responsive React-based UI with Tailwind CSS
+- Customizable question templates
+- Secure data handling
 
-## Requirements
+📝 **Rich Output Options**
+- Professional PDF reports with styled formatting
+- Clean TXT output for plain text needs
+- Properly structured DOCX documents
+- Browser-optimized file generation
 
-- Node.js 18+
+💫 **Modern User Interface**
+- Sleek, responsive design with Tailwind CSS
+- Real-time progress tracking with visual feedback
+- Enhanced UI with glow effects and animations
+- Intuitive question management interface
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Node.js 18 or higher
 - AWS Account with access to:
   - AWS Bedrock (Claude 3.5 Haiku model)
   - AWS Transcribe
   - S3 Bucket
 - Environment variables configured
 
-## Installation
+### Quick Start
 
-1. Clone the repository:
+1. **Clone the repository**
    ```bash
-   git clone https://github.com/your-username/sterling-services-toolkit.git
-   cd sterling-services-toolkit
+   git clone https://github.com/jakerains/sterling-services-bedrock.git
+   cd sterling-services-bedrock
    ```
 
-2. Install dependencies:
+2. **Install dependencies**
    ```bash
    npm install
    ```
 
-3. Configure environment variables in `.env`:
-   ```
+3. **Configure environment**
+   Create a `.env` file in the root directory:
+   ```env
    VITE_AWS_ACCESS_KEY_ID=your_access_key
    VITE_AWS_SECRET_ACCESS_KEY=your_secret_key
    VITE_AWS_REGION=your_region
    VITE_AWS_BUCKET_NAME=your_bucket
    ```
 
-## Development
+4. **Start development server**
+   ```bash
+   npm run dev
+   ```
 
-Run the development server:
-```bash
-npm run dev
-```
+## 🔧 Development
 
-## Contributing
+### Available Scripts
 
-Contributions to improve the Sterling Services: Analysis ToolKit are welcome. Please feel free to submit pull requests or open issues to suggest improvements or report bugs.
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run preview` - Preview production build
+- `npm run lint` - Run ESLint
+- `npm run test:bedrock` - Test Bedrock integration
 
-## License
+## 🤝 Contributing
 
-MIT License
+We welcome contributions! Here's how you can help:
 
-Copyright (c) 2024 GenAI Jake
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+## 📄 License
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+## 📞 Contact & Support
 
-## Contact
+- Twitter: [@genaijake](https://twitter.com/genaijake)
+- Issues: [GitHub Issues](https://github.com/jakerains/sterling-services-bedrock/issues)
 
-For any queries or support, please contact @genaijake on X (formerly Twitter).
+## 📝 Changelog
 
-## Changelog
+See [CHANGELOG.md](CHANGELOG.md) for a detailed history of changes.
 
-See the [CHANGELOG.md](CHANGELOG.md) file for details on recent changes and version history.
+---
+<div align="center">
+  <sub>Made with 💚 by GenAI Jake</sub>
+</div>

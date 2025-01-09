@@ -8,6 +8,17 @@ import { toast } from 'react-hot-toast';
 import './ResultsDisplay.css';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { Document, Packer, Paragraph, TextRun, HeadingLevel } from 'docx';
+
+interface QA {
+  question: string;
+  answer: string;
+}
+
+interface Category {
+  category: string;
+  answers: QA[];
+}
 
 export default function ResultsDisplay() {
   const results = useResults((state) => state.results);
@@ -29,6 +40,44 @@ export default function ResultsDisplay() {
     setProcessing(false);
     setCompleted(false);
     toast.success('Ready for new transcription');
+  };
+
+  const generateWordDocument = async (results: Category[]) => {
+    const doc = new Document({
+      sections: [{
+        properties: {},
+        children: [
+          new Paragraph({
+            text: "Sterling Services Analysis",
+            heading: HeadingLevel.TITLE,
+          }),
+          ...results.flatMap(category => [
+            new Paragraph({
+              text: category.category,
+              heading: HeadingLevel.HEADING_1,
+              spacing: { before: 400, after: 200 }
+            }),
+            ...category.answers.flatMap((qa: QA) => [
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: "Q: " + qa.question,
+                    bold: true,
+                  }),
+                ],
+                spacing: { before: 200, after: 100 }
+              }),
+              new Paragraph({
+                text: qa.answer,
+                spacing: { after: 200 }
+              })
+            ])
+          ])
+        ]
+      }]
+    });
+
+    return await Packer.toBlob(doc);
   };
 
   const downloadResults = async () => {
@@ -56,25 +105,15 @@ export default function ResultsDisplay() {
             saveAs(textBlob, `${txtName}.txt`);
             break;
           case 'docx':
-            const docxContent = results
-              .map(
-                (category) =>
-                  `${category.category}\n\n${category.answers
-                    .map((qa) => `Q: ${qa.question}\nA: ${qa.answer}\n`)
-                    .join('\n')}`
-              )
-              .join('\n\n');
-            const docxBlob = new Blob([docxContent], {
-              type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-            });
+            const docxBlob = await generateWordDocument(results);
             const docxName = file?.name ? file.name.replace(/\.[^/.]+$/, '') : 'results';
             saveAs(docxBlob, `${docxName}.docx`);
             break;
         }
       }
     } catch (error) {
-      console.error('Error generating PDF:', error);
-      toast.error('Error generating PDF');
+      console.error('Error generating document:', error);
+      toast.error('Error generating document');
     }
   };
 
